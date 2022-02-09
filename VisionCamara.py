@@ -53,7 +53,9 @@ def webcam(cam, color_avr):
         mascara = cv2.inRange(frame,rangomin,rangomax)
         cv2.imshow("mascara", mascara)
         opening = cv2.morphologyEx(mascara,cv2.MORPH_OPEN,kernel)
-        variable,contours,hierarchy = cv2.findContours(opening,1,2)
+        contours,hierarchy = cv2.findContours(opening,1,2)
+        cv2.drawContours(frame,contours,-1,(0,255,0),3)
+        print(contours)
         for cnt in contours:
             if np.size(cnt)>500:
                 x,y,w,h = cv2.boundingRect(cnt)
@@ -74,7 +76,7 @@ def main():
     board = np.zeros((int(cam.get(4)),int(cam.get(3)),3),dtype = np.uint8)
     while(True):
         ret,frame=cam.read()
-        # hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         cv2.namedWindow('board')
         cv2.setMouseCallback('board',paint)
         dst = cv2.addWeighted(frame,1,board,1,0)
@@ -85,13 +87,13 @@ def main():
     print("primer paso \n")
     cv2.destroyAllWindows()
 
-    color = ('b','g','r')
+    #color = ('b','g','r')
 
-    for i,col in enumerate(color):
-        histr = cv2.calcHist([frame[yi:yf,xi:xf]],[i],None,[256],[0,256])
-        plt.plot(histr,color = col)
-        plt.xlim([0,256])
-    plt.show()
+    #for i,col in enumerate(color):
+    #    histr = cv2.calcHist([frame[yi:yf,xi:xf]],[i],None,[256],[0,256])
+    #    plt.plot(histr,color = col)
+    #    plt.xlim([0,256])
+    #plt.show()
 
 
 
