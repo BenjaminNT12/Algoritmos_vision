@@ -88,6 +88,7 @@ historial = modelo.fit(datos_entrenamiento, epochs = 5, steps_per_epoch = math.c
 plt.xlabel("# Epoca")
 plt.ylabel("Magnitud de perdida")
 plt.plot(historial.history["loss"])
+# plt.show()
 
 import numpy as np
 
