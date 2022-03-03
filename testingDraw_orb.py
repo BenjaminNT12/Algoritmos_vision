@@ -37,7 +37,7 @@ def crop_image():
     global close_paint, background_image, crop_img
 
     close_paint, drawing = False, False
-    video = cv.VideoCapture(1)
+    video = cv.VideoCapture(0)
     background_image = np.zeros((int(video.get(cv.CAP_PROP_FRAME_HEIGHT)) , int(video.get(cv.CAP_PROP_FRAME_WIDTH)), 3), dtype=np.uint8)
     while True:
         _, frame = video.read()
@@ -62,7 +62,7 @@ def crop_image():
 
 
 def homography():
-    video = cv.VideoCapture(1)
+    video = cv.VideoCapture(0)
 
 
     crop_img_gray = cv.cvtColor(crop_img, cv.COLOR_BGR2GRAY) # convierte la imagen de color, a blanco y negro
