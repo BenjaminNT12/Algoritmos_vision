@@ -55,3 +55,15 @@ cv2.waitKey(0)
 #     cv2.imshow("frame2",frame)
 #     if cv2.waitKey(1) & 0xFF == 27: # tecla scape:
 #         break
+
+Se describe  a lo largo de la lectura, síndrome de Tourette, que esta caracterizado
+por un exceso de energia nerviosa, que se constituye por tics nerviosos, una condicion
+que no ha sido explorada en su totalidad pero que abunda en las personas.
+un dia Ray el protagonista de esta pequeña historia
+Un día llegó Ray a la consulta, padecía el síndrome de Tourette desde que era pequeño
+y ahora tenía veinticuatro años, había ido al colegio, a la universidad,
+estaba casado, tenía amigos. Sus múltiples tics de extrema videncia hicieron que le
+despidiesen de varios trabajos y había puesto en peligro su matrimonio. Ray tenía
+mucha sensibilidad musical. El síndrome constituía una ventaja en diversos juegos,
+él se sentía libre cuando cantaba, incluso cando visitaba una alberca para nadar.
+Para contrarrrestar estos tics,
