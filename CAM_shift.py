@@ -2,7 +2,6 @@ import cv2 as cv
 import numpy as np
 import math
 
-
 video = cv.VideoCapture(0)
 p = False
 down= False
