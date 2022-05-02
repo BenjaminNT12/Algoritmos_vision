@@ -2,7 +2,10 @@ import cv2 as cv
 import numpy as np
 import math
 
-video = cv.VideoCapture(0)
+
+path = r'C:\Users\benja\github\Algoritmos_vision\video3.mp4'
+video = cv.VideoCapture(path)
+# video = cv.VideoCapture(0)
 p = False
 down= False
 xi,yi = 0,0

@@ -4,7 +4,8 @@ import math
 from matplotlib import pyplot as plt
 
 
-video = cv.VideoCapture(0)
+path = r'C:\Users\benja\github\Algoritmos_vision\video3.mp4'
+video = cv.VideoCapture(path)
 p = False
 down= False
 xi,yi = 0,0
@@ -59,7 +60,8 @@ for i,col in enumerate(color):
     plt.xlim([0,256])
 plt.show()
 
-cap = cv.VideoCapture(0)
+path2 = r'C:\Users\benja\github\Algoritmos_vision\video3.mp4'
+cap = cv.VideoCapture(path2)
 
 term_criteria = (cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1)
 greenLower = (110, 100, 100)

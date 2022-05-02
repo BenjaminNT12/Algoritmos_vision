@@ -3,7 +3,7 @@ import numpy as np
 
 from time import sleep
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 hsv_b_min = (79,114,158)
 hsv_b_max = (99,250,226)

@@ -105,7 +105,7 @@ def homography():
 
         cv.imshow("keyimg3",keyimg3)
         print(len(good_point))
-        if len(good_point) > 10:
+        if len(good_point) > 50:
             query_pts = np.float32([kp_image[m.queryIdx].pt for m in good_point]).reshape(-1, 1, 2)
             train_pts = np.float32([kp_grayframe[m.trainIdx].pt for m in good_point]).reshape(-1, 1, 2)
 
