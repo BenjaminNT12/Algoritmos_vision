@@ -23,6 +23,11 @@ color = ('b','g','r')
 tiempo_anterior = 0.0
 periodo = 0.0
 frecuencia = 0.0
+
+result_r, result_g, result_b = [], [], []
+target_hue = 0
+
+
 ################################################################################
 
 def DarkChannel(im,sz):
@@ -95,47 +100,33 @@ def Recover(im,t,A,tx = 0.1):
 
     return res
 
-################################################################################
-        # path2 = r'C:\Users\benja\github\Algoritmos_vision\roi.png'
-        # roi = cv.imread(path2)
-        # # roi = first_frame[yi: yf, xi : xf]
-        # # print(roi)
-        # cv.imshow("roi", roi)
-        # x, y = 223, 45
-        # print(roi.shape)
-        # width = np.int32(roi.shape[1]/2)
-        # height = np.int32(roi.shape[0]/2)
-        # #
-        # hsv_roi = cv.cvtColor(roi, cv.COLOR_BGR2HSV)
-        # roi_hist = cv.calcHist([hsv_roi], [0], None, [180], [0, 180])
-        # #
-        # # cap = cv.VideoCapture(0)
-        # #
-        # term_criteria = (cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1)
-#
-# while True:
-#     _, frame = cap.read()
-#     frame = cv.flip(frame, 1)
-#     hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-#     mask = cv.calcBackProject([hsv], [0], roi_hist, [0, 180], 1)
-#
-#     ret, track_window = cv.CamShift(mask, (x, y, width, height), term_criteria)
-#
-#     pts = cv.boxPoints(ret)
-#     pts = np.int0(pts)
-#     cv.polylines(frame, [pts], True, (255, 0, 0), 2)
-#
-#     cv.imshow("mask", mask)
-#     cv.imshow("Frame", frame)
-#
-#     key = cv.waitKey(1)
-#     if key == 27:
-#         break
-#
-# cap.release()
-# cv.destroyAllWindows()
 
-################################################################################
+# def find_object(im, mask, color):
+#     cnts, hierarchy = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+#     c = max(cnts, key = cv.contourArea)
+#
+#     x, y, w, h = cv.boundingRect(c)
+#     cv.rectangle(im, (x,y),(x+w,y+h), color,2)
+#
+#     return(round(x+w/2), round(y+h/2))
+
+def find_object(im, mask, color):
+    cnts, hierarchy = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    x, y, w, h = 0, 0, 0, 0
+    i = 0
+    # c = max(cnts, key = cv.contourArea)
+    for pic, cnts in enumerate(cnts):
+        area = cv.contourArea(cnts)
+        if (area > 250):
+            x, y, w, h = cv.boundingRect(cnts)
+            # cv.rectangle(im, (x,y),(x+w,y+h), color,2)
+            cv.circle(im, (int(x+w/2),int(y+h/2)), 10, color,-1)
+            i = i+1
+            im = cv.putText(im, str(i) , (int(x+w/2),int(y+h/2)), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv.LINE_AA)
+
+    # d = math.sqrt()
+
+    return(round(x+w/2), round(y+h/2))
 
 while True:
     _, frame = video.read()
@@ -144,7 +135,7 @@ while True:
     frecuencia = 1/periodo
     print('Periodo: %5.2f, Frecuencia %5.2f'%(periodo, frecuencia))
     tiempo_anterior = time.time()
-# ###############################################################################
+
     I = frame.astype('float64')/255;
     dark = DarkChannel(I,30);
     A = AtmLight(I,dark);
@@ -152,36 +143,53 @@ while True:
     t = TransmissionRefine(frame,te);
     J = Recover(I,t,A,0.1);
     J2 = J.astype('uint8')*255
-    cv.imshow("dark",dark);
-    cv.imshow("t",t);
-    cv.imshow('J2',J2);
-################################################################################
-    # frame = cv.circle(frame, (x, y), 10, (255, 0 ,0), 10)
-    cv.imshow("Frame", frame)
+
     J2_gris = cv.cvtColor(J2, cv.COLOR_BGR2GRAY)
-    # print(J2_gris.shape)
-    cv.imshow("J2_gris", J2_gris)
     thresh = 128
     retb, img_binary = cv.threshold(J2_gris, thresh, 255, cv.THRESH_BINARY)
 
-    cv.imshow("Binaria", img_binary)
-################################################################################
-    # hsv2 = cv.cvtColor(J2, cv.COLOR_BGR2HSV)
-    # mask2 = cv.calcBackProject([hsv2], [0], roi_hist, [0, 180], 1)
-    # ret, track_window = cv.CamShift(mask2, (x, y, width, height), term_criteria)
-    # pts = cv.boxPoints(ret)
-    # pts = np.int0(pts)
-    # cv.polylines(J, [pts], True, (255, 0, 0), 2)
+    cv.imshow("Frame", frame)
+    cv.imshow("dark",dark);
+    cv.imshow("t",t);
     cv.imshow("J",J);
-################################################################################
-    # mask = cv.inRange(img_binary, 0, 0)
-    #
-    # for i in range(mask.shape[0]):
-    #     for j in range(mask.shape[1]):
-    #         if mask[i][j] == 255:
-    #             frame4[i][j][0:3] = mask[i][j]
+    cv.imshow('J2',J2);
+    cv.imshow("J2_gris", J2_gris)
+    cv.imshow("Binaria", img_binary)
 
-    # cv.imshow("mask", mask)
+################################################################################
+    r, g, b = cv.split(J2)
+    r = r*1
+    g = g*0
+    b = b*0
+
+    image = cv.merge((r, g, b))
+    cv.imshow("blue",b)
+    cv.imshow("green",g)
+    cv.imshow("red",r)
+    cv.imshow('image',image);
+
+    hsv_b_min = (int(194/2),68,83)
+    hsv_b_max = (int(241/2),255,255)
+
+    hsv_g_min = (54,93,183)
+    hsv_g_max = (81,255,255)
+
+    hsv_r_min = (0, 100, 20)
+    hsv_r_max = (8, 255, 255)
+    # hsv_r_min = (0,100,100)
+    # hsv_r_min = (0,255,255)
+
+    hsv = cv.cvtColor(image, cv.COLOR_BGR2HSV)
+
+    mask_blue = cv.inRange(hsv, hsv_b_min, hsv_b_max)
+    # mask_red = cv.inRange(hsv, hsv_r_min, hsv_r_max)
+    pg = find_object(image, mask_blue, (0,0,255))
+    # pg = find_object(image, mask_blue, (0,0,255))
+
+
+    cv.imshow('Tracking',image);
+
+################################################################################
 
     key = cv.waitKey(1)
     if key == 27:
