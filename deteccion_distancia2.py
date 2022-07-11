@@ -7,7 +7,7 @@ from PIL import Image
 
 
 
-path = r'C:\Users\benja\github\Algoritmos_vision\video1.mp4'
+path = r'video1.mp4'
 video = cv.VideoCapture(path)
 
 p = False
@@ -100,31 +100,19 @@ def Recover(im,t,A,tx = 0.1):
 
     return res
 
-
-# def find_object(im, mask, color):
-#     cnts, hierarchy = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-#     c = max(cnts, key = cv.contourArea)
-#
-#     x, y, w, h = cv.boundingRect(c)
-#     cv.rectangle(im, (x,y),(x+w,y+h), color,2)
-#
-#     return(round(x+w/2), round(y+h/2))
-
 def find_object(im, mask, color):
     cnts, hierarchy = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     x, y, w, h = 0, 0, 0, 0
     i = 0
-    # c = max(cnts, key = cv.contourArea)
+
     for pic, cnts in enumerate(cnts):
         area = cv.contourArea(cnts)
         if (area > 250):
             x, y, w, h = cv.boundingRect(cnts)
-            # cv.rectangle(im, (x,y),(x+w,y+h), color,2)
+
             cv.circle(im, (int(x+w/2),int(y+h/2)), 10, color,-1)
             i = i+1
             im = cv.putText(im, str(i) , (int(x+w/2),int(y+h/2)), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv.LINE_AA)
-
-    # d = math.sqrt()
 
     return(round(x+w/2), round(y+h/2))
 
@@ -176,13 +164,10 @@ while True:
 
     hsv_r_min = (0, 100, 20)
     hsv_r_max = (8, 255, 255)
-    # hsv_r_min = (0,100,100)
-    # hsv_r_min = (0,255,255)
 
     hsv = cv.cvtColor(image, cv.COLOR_BGR2HSV)
 
     mask_blue = cv.inRange(hsv, hsv_b_min, hsv_b_max)
-    # mask_red = cv.inRange(hsv, hsv_r_min, hsv_r_max)
     pg = find_object(image, mask_blue, (0,0,255))
     # pg = find_object(image, mask_blue, (0,0,255))
 
