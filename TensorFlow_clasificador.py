@@ -9,7 +9,7 @@ datos_entrenamiento, datos_pruebas = datos['train'], datos['test']
 nombres_clases = metadatos.features['label'].names
 print(nombres_clases)
 # normalizar los datos (pasar de 0-255 a 0-1)
-
+# yum
 def normalizar(imagenes, etiquetas):
     imagenes =tf.cast(imagenes, tf.float32)
     imagenes /= 255 # Aqui lo pasa de 0-255 a 0-1
