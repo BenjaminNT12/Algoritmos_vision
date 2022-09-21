@@ -54,7 +54,7 @@ def GuideBlock(H,miu,in_channels):
 
 
 def Network(images,in_channels = 16):
-  with tf.variable_scope('Network',  reuse=tf.AUTO_REUSE):  
+  with tf.compat.v1.variable_scope('Network',  reuse=tf.compat.v1.AUTO_REUSE):  
       
     mean, var = tf.nn.moments(images, [1, 2], keep_dims=False)   
     sigma = tf.sqrt(var)   

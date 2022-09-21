@@ -9,6 +9,7 @@ import os
 import skimage.io
 import numpy as np
 import tensorflow as tf
+# import tensorflow.compat.v1 as tf
 import matplotlib.pyplot as plt
 
 import model
@@ -17,18 +18,22 @@ import model
 tf.compat.v1.reset_default_graph()
 
 
-input_path = './img/input/' # the path of testing images
+input_path = '/home/nicolas/Documentos/GitHub/Algoritmos_vision/code/img/input/' # the path of testing images
 
-results_path = './img/output/' # the path of enhanced results
+results_path = '/home/nicolas/Documentos/GitHub/Algoritmos_vision/code/img/output/' # the path of enhanced results
 
 
 
 def _parse_function(filename):      
-  image_string  = tf.read_file(filename)  
+  image_string  = tf.io.read_file(filename)  
   image_decoded = tf.image.decode_png(image_string, channels = 3)  
   image_decoded = tf.image.convert_image_dtype(image_decoded, tf.float32) 
   return image_decoded 
 
+
+def eval_input_fn():
+   batched_dataset = dataset.test(flags_obj.data_dir).batch(flags_obj.batch_size)
+   return batched_dataset.__iter__()
 
 
 if __name__ == '__main__':
@@ -46,9 +51,12 @@ if __name__ == '__main__':
    dataset = dataset.map(_parse_function)    
    dataset = dataset.prefetch(buffer_size = 10)
    dataset = dataset.batch(1).repeat()  
-   iterator = dataset.make_one_shot_iterator()
+   # iterator = dataset.make_one_shot_iterator()
+   iterator = tf.compat.v1.data.make_one_shot_iterator(dataset)
+   # iterator = eval_input_fn()
    
    underwater = iterator.get_next()    
+   # underwater = next(iter)
  
    output = model.Network(underwater)
    output = model.compressedHE(output)
