@@ -1,12 +1,10 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-
 # This is the testing code of our paper and for non-commercial use only. 
 # X. Fu, and X. Cao " Underwater image enhancement with global-local networks and compressed-histogram equalization", 
 # Signal Processing: Image Communication, 2020. DOI: 10.1016/j.image.2020.115892
 
 
-import tensorflow as tf
+# import tensorflow as tf
+import tensorflow.compat.v1 as tf 
 import numpy as np
 
 
@@ -54,25 +52,25 @@ def GuideBlock(H,miu,in_channels):
 
 
 def Network(images,in_channels = 16):
-  with tf.compat.v1.variable_scope('Network',  reuse=tf.compat.v1.AUTO_REUSE):  
+  with tf.variable_scope('Network',  reuse=tf.compat.v1.AUTO_REUSE):  
       
-    mean, var = tf.nn.moments(images, [1, 2], keep_dims=False)   
+    mean, var = tf.nn.moments(images, [1, 2], keepdims=False)   
     sigma = tf.sqrt(var)   
-    CONCAT = tf.concat([mean,sigma],-1) 
+      CONCAT = tf.concat([mean,sigma],-1) 
     
     with tf.variable_scope('avg'):
-      h1 = tf.layers.dense(CONCAT, in_channels)
+      h1 = tf.keras.layers.Dense(CONCAT, in_channels)
       h1 = tf.nn.relu(h1)
       
-      h2 = tf.layers.dense(h1, in_channels)
+      h2 = tf.keras.layers.Dense(h1, in_channels)
       h2 = tf.nn.relu(h2)   
       
-      h3 = tf.layers.dense(h2, in_channels)
+      h3 = tf.keras.layers.Dense(h2, in_channels)
       h3 = tf.nn.relu(h3)  
                              
       h = tf.concat([h1,h2,h3],-1)   
      
-      res = tf.layers.dense(h,3)      
+      res = tf.keras.layers.Dense(h,3)      
       new_mean =  tf.nn.sigmoid(mean + res)
 
 
@@ -101,9 +99,9 @@ def Network(images,in_channels = 16):
 
 
 if __name__ == '__main__':
-    tf.reset_default_graph()   
+    tf.compat.v1.reset_default_graph()   
     
-    input_x = tf.random_normal([1,201,201,3])
+    input_x = tf.compat.v1.random_normal([1,201,201,3])
     
     output  = Network(input_x)
     var_list = tf.trainable_variables()   
