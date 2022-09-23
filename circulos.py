@@ -7,7 +7,7 @@ path = r'C:\Users\benja\github\Algoritmos_vision\circulos5.png'
 image = cv2.imread(path)
 # image2 = cv2.imread(path)
 # image = cv2.bitwise_not(image)
-# image = cv2.imread('1.jpg')
+# image = cv2.imread('1.jpg') #
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 # cv2.imshow('thresh 1', thresh)
