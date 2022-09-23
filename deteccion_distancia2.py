@@ -7,7 +7,7 @@ from PIL import Image
 
 
 
-path = r'video1.mp4'
+path = r'video3.mp4'
 video = cv.VideoCapture(path)
 
 p = False
