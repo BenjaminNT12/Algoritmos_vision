@@ -55,10 +55,10 @@ def Network(images,in_channels = 16):
     with tf.variable_scope('Network',  reuse=tf.compat.v1.AUTO_REUSE): # AUTO_REUSE crea las variables si no existen de tal manera que sean variables independientes
 
         mean, var = tf.nn.moments(images, [1, 2], keepdims=False)# calcula la media y la varianza de x
-        sigma = tf.sqrt(var)
-        CONCAT = tf.concat([mean,sigma],-1)
+        sigma = tf.sqrt(var) # raiz de la varianza
+        CONCAT = tf.concat([mean,sigma],-1) # concatena la lista de valores a los largo de las dimensiones
 
-    with tf.variable_scope('avg'):
+    with tf.variable_scope('avg'): # avg solo es el nombre
         h1 = tf.keras.layers.Dense(CONCAT, in_channels)
         h1 = tf.nn.relu(h1)
 
