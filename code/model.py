@@ -52,26 +52,26 @@ def GuideBlock(H,miu,in_channels):
 
 
 def Network(images,in_channels = 16):
-  with tf.variable_scope('Network',  reuse=tf.compat.v1.AUTO_REUSE):
+    with tf.variable_scope('Network',  reuse=tf.compat.v1.AUTO_REUSE): # AUTO_REUSE crea las variables si no existen de tal manera que sean variables independientes
 
-    mean, var = tf.nn.moments(images, [1, 2], keepdims=False)
-    sigma = tf.sqrt(var)
-    CONCAT = tf.concat([mean,sigma],-1) 
+        mean, var = tf.nn.moments(images, [1, 2], keepdims=False)# calcula la media y la varianza de x
+        sigma = tf.sqrt(var)
+        CONCAT = tf.concat([mean,sigma],-1)
 
     with tf.variable_scope('avg'):
-      h1 = tf.keras.layers.Dense(CONCAT, in_channels)
-      h1 = tf.nn.relu(h1)
+        h1 = tf.keras.layers.Dense(CONCAT, in_channels)
+        h1 = tf.nn.relu(h1)
 
-      h2 = tf.keras.layers.Dense(h1, in_channels)
-      h2 = tf.nn.relu(h2)
+        h2 = tf.keras.layers.Dense(h1, in_channels)
+        h2 = tf.nn.relu(h2)
 
-      h3 = tf.keras.layers.Dense(h2, in_channels)
-      h3 = tf.nn.relu(h3)
+        h3 = tf.keras.layers.Dense(h2, in_channels)
+        h3 = tf.nn.relu(h3)
 
-      h = tf.concat([h1,h2,h3],-1)
+        h = tf.concat([h1,h2,h3],-1)
 
-      res = tf.keras.layers.Dense(h,3)
-      new_mean =  tf.nn.sigmoid(mean + res)
+        res = tf.keras.layers.Dense(h,3)
+        new_mean =  tf.nn.sigmoid(mean + res)
 
 
     with tf.variable_scope('local'):
@@ -94,7 +94,7 @@ def Network(images,in_channels = 16):
         J = tf.nn.relu(J_centered + new_mean)
         J = tf.minimum(J, tf.ones_like(J))
 
-  return  J
+    return  J
 
 
 
