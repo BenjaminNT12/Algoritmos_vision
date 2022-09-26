@@ -5,24 +5,12 @@
 import os
 import skimage.io
 import numpy as np
-# import tensorflow as tf
 import tensorflow.compat.v1 as tf # Para version 2 de tensorflow
 import matplotlib.pyplot as plt
-# import os
-# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
 import model
-# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-
-# tf.reset_default_graph()
-
 
 input_path = '/home/nicolas/github/Algoritmos_vision/code/img/input/' # the path of testing images
-
 results_path = '/home/nicolas/github/Algoritmos_vision/code/img/output/' # the path of enhanced results
-
-
 
 def _parse_function(filename):
   image_string  = tf.io.read_file(filename)
@@ -75,20 +63,26 @@ if __name__ == '__main__':
 
    underwater = iterator.get_next()
    # underwater = next(iterator)
+
    output = model.Network(underwater)
+   print("llego hasta aqui 1")
    output = model.compressedHE(output)
+   print("llego hasta aqui 2")
    output = tf.clip_by_value(output, 0., 1.)
    final = output[0,:,:,:]
 
    config = tf.ConfigProto()
-   config.gpu_options.allow_growth=True
-
+   config.gpu_options.allow_growth=False
+   print("llego hasta aqui 6")
    with tf.Session(config=config) as sess:
 
         print ("Loading model")
         all_vars = tf.trainable_variables()
-        all_vars = tf.train.Saver(var_list = all_vars)
-        all_vars.restore(sess,'./model/model')
+        print("llego hasta aqui 7")
+        print(all_vars)
+        all_vars = tf.keras.Model.save_weights(var_list = all_vars)
+        print("llego hasta aqui 8")
+        all_vars.restore(sess,'/home/nicolas/github/Algoritmos_vision/code/model/model')
 
         num_img = len(filename)
         for i in range(num_img):

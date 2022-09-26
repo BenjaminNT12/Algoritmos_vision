@@ -58,41 +58,43 @@ def Network(images,in_channels = 16):
         sigma = tf.sqrt(var) # raiz de la varianza
         CONCAT = tf.concat([mean,sigma],-1) # concatena la lista de valores a los largo de las dimensiones
 
-    with tf.variable_scope('avg'): # avg solo es el nombre
-        h1 = tf.keras.layers.Dense(CONCAT, in_channels)
-        h1 = tf.nn.relu(h1)
+        with tf.variable_scope('avg'): # avg solo es el nombre
+            print("llego hasta aqui 3")
+            h1 = tf.layers.dense(CONCAT, in_channels)
+            print("llego hasta aqui 4")
+            h1 = tf.nn.relu(h1)
 
-        h2 = tf.keras.layers.Dense(h1, in_channels)
-        h2 = tf.nn.relu(h2)
+            h2 = tf.layers.dense(h1, in_channels)
+            h2 = tf.nn.relu(h2)
 
-        h3 = tf.keras.layers.Dense(h2, in_channels)
-        h3 = tf.nn.relu(h3)
+            h3 = tf.layers.dense(h2, in_channels)
+            h3 = tf.nn.relu(h3)
 
-        h = tf.concat([h1,h2,h3],-1)
+            h = tf.concat([h1,h2,h3],-1)
 
-        res = tf.keras.layers.Dense(h,3)
-        new_mean =  tf.nn.sigmoid(mean + res)
-
-
-    with tf.variable_scope('local'):
-        I_centered = images - mean
-
-        conv1 = GuideBlock(I_centered, res, in_channels)
-        conv1 = tf.nn.relu(conv1)
-
-        conv2 = GuideBlock(conv1, res, in_channels)
-        conv2 = tf.nn.relu(conv2)
-
-        conv3 = GuideBlock(conv2, res, in_channels)
-        conv3 = tf.nn.relu(conv3)
-
-        conv = tf.concat([conv1,conv2,conv3],-1)
-        J_centered = GuideBlock(conv,res,3)
+            res = tf.layers.dense(h,3)
+            new_mean =  tf.nn.sigmoid(mean + res)
 
 
-    with tf.variable_scope('output'):
-        J = tf.nn.relu(J_centered + new_mean)
-        J = tf.minimum(J, tf.ones_like(J))
+        with tf.variable_scope('local'):
+            I_centered = images - mean
+
+            conv1 = GuideBlock(I_centered, res, in_channels)
+            conv1 = tf.nn.relu(conv1)
+
+            conv2 = GuideBlock(conv1, res, in_channels)
+            conv2 = tf.nn.relu(conv2)
+
+            conv3 = GuideBlock(conv2, res, in_channels)
+            conv3 = tf.nn.relu(conv3)
+
+            conv = tf.concat([conv1,conv2,conv3],-1)
+            J_centered = GuideBlock(conv,res,3)
+            print("llego hasta 5")
+
+        with tf.variable_scope('output'):
+            J = tf.nn.relu(J_centered + new_mean)
+            J = tf.minimum(J, tf.ones_like(J))
 
     return  J
 
