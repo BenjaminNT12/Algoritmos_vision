@@ -1,10 +1,12 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
 # This is the testing code of our paper and for non-commercial use only.
 # X. Fu, and X. Cao " Underwater image enhancement with global-local networks and compressed-histogram equalization",
 # Signal Processing: Image Communication, 2020. DOI: 10.1016/j.image.2020.115892
 
 
-# import tensorflow as tf
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 import numpy as np
 
 
@@ -52,58 +54,56 @@ def GuideBlock(H,miu,in_channels):
 
 
 def Network(images,in_channels = 16):
-    with tf.variable_scope('Network',  reuse=tf.compat.v1.AUTO_REUSE): # AUTO_REUSE crea las variables si no existen de tal manera que sean variables independientes
+  with tf.variable_scope('Network',  reuse=tf.AUTO_REUSE):
 
-        mean, var = tf.nn.moments(images, [1, 2], keepdims=False)# calcula la media y la varianza de x
-        sigma = tf.sqrt(var) # raiz de la varianza
-        CONCAT = tf.concat([mean,sigma],-1) # concatena la lista de valores a los largo de las dimensiones
+    mean, var = tf.nn.moments(images, [1, 2], keep_dims=False)
+    sigma = tf.sqrt(var)
+    CONCAT = tf.concat([mean,sigma],-1)
 
-        with tf.variable_scope('avg'): # avg solo es el nombre
-            print("llego hasta aqui 3")
-            h1 = tf.layers.dense(CONCAT, in_channels)
-            print("llego hasta aqui 4")
-            h1 = tf.nn.relu(h1)
+    with tf.variable_scope('avg'):
+      h1 = tf.layers.dense(CONCAT, in_channels)
+      h1 = tf.nn.relu(h1)
 
-            h2 = tf.layers.dense(h1, in_channels)
-            h2 = tf.nn.relu(h2)
+      h2 = tf.layers.dense(h1, in_channels)
+      h2 = tf.nn.relu(h2)
 
-            h3 = tf.layers.dense(h2, in_channels)
-            h3 = tf.nn.relu(h3)
+      h3 = tf.layers.dense(h2, in_channels)
+      h3 = tf.nn.relu(h3)
 
-            h = tf.concat([h1,h2,h3],-1)
+      h = tf.concat([h1,h2,h3],-1)
 
-            res = tf.layers.dense(h,3)
-            new_mean =  tf.nn.sigmoid(mean + res)
+      res = tf.layers.dense(h,3)
+      new_mean =  tf.nn.sigmoid(mean + res)
 
 
-        with tf.variable_scope('local'):
-            I_centered = images - mean
+    with tf.variable_scope('local'):
+        I_centered = images - mean
 
-            conv1 = GuideBlock(I_centered, res, in_channels)
-            conv1 = tf.nn.relu(conv1)
+        conv1 = GuideBlock(I_centered, res, in_channels)
+        conv1 = tf.nn.relu(conv1)
 
-            conv2 = GuideBlock(conv1, res, in_channels)
-            conv2 = tf.nn.relu(conv2)
+        conv2 = GuideBlock(conv1, res, in_channels)
+        conv2 = tf.nn.relu(conv2)
 
-            conv3 = GuideBlock(conv2, res, in_channels)
-            conv3 = tf.nn.relu(conv3)
+        conv3 = GuideBlock(conv2, res, in_channels)
+        conv3 = tf.nn.relu(conv3)
 
-            conv = tf.concat([conv1,conv2,conv3],-1)
-            J_centered = GuideBlock(conv,res,3)
-            print("llego hasta 5")
+        conv = tf.concat([conv1,conv2,conv3],-1)
+        J_centered = GuideBlock(conv,res,3)
 
-        with tf.variable_scope('output'):
-            J = tf.nn.relu(J_centered + new_mean)
-            J = tf.minimum(J, tf.ones_like(J))
 
-    return  J
+    with tf.variable_scope('output'):
+        J = tf.nn.relu(J_centered + new_mean)
+        J = tf.minimum(J, tf.ones_like(J))
+
+  return  J
 
 
 
 if __name__ == '__main__':
-    tf.compat.v1.reset_default_graph()
+    tf.reset_default_graph()
 
-    input_x = tf.compat.v1.random_normal([1,201,201,3])
+    input_x = tf.random_normal([1,201,201,3])
 
     output  = Network(input_x)
     var_list = tf.trainable_variables()
