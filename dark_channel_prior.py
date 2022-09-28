@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
     def nothing(*argv):
         pass
-    fn = r'C:\Users\benja\github\Algoritmos_vision\15.png'
+    fn = '/home/nicolas/github\Algoritmos_vision\15.png'
     # fn = '15.png'
     src = cv2.imread(fn);
 

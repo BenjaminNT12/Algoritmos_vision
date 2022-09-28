@@ -31,7 +31,6 @@ if __name__ == '__main__':
    for i in range(len(filename)):
       filename[i] = input_path + filename[i]
 
-
    filename_tensor = tf.convert_to_tensor(filename, dtype=tf.string)
 
    dataset = tf.data.Dataset.from_tensor_slices((filename_tensor))
@@ -44,7 +43,6 @@ if __name__ == '__main__':
 
    output = model.Network(underwater)
    output = model.compressedHE(output)
-
 
    output = tf.clip_by_value(output, 0., 1.)
    final = output[0,:,:,:]
