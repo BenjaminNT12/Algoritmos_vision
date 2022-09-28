@@ -59,11 +59,15 @@ if __name__ == '__main__':
         all_vars.restore(sess,'/home/nicolas/github/Algoritmos_vision/code/model/model')
 
         num_img = len(filename)
+        # skimage.io.imshow(enhanced)
+        # skimage.io.show()
+        print(type(enhanced))
         for i in range(num_img):
             enhanced,ori = sess.run([final,underwater])
             enhanced = np.uint8(enhanced* 255.)
-            cv.imshow("image", enhanced)
-            print(type(enhanced))
+            skimage.io.imshow(enhanced)
+            skimage.io.show()
+            # print(type(enhanced))
             # index = imgName[i].rfind('.')
             # name = imgName[i][:index]
             # skimage.io.imsave(results_path + name +'.png', enhanced)
