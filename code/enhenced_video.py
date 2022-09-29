@@ -12,6 +12,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import model
 import cv2 as cv
+from skimage import img_as_ubyte
 
 tf.reset_default_graph()
 
@@ -19,7 +20,7 @@ input_path = '/home/nicolas/github/Algoritmos_vision/code/img/input/' # the path
 results_path = '/home/nicolas/github/Algoritmos_vision/code/img/output/' # the path of enhanced results
 
 def _parse_function(filename):
-  image_string  = tf.read_file(filename)
+  image_string  = tf.read_file(filename) # lee la imagen
   image_decoded = tf.image.decode_png(image_string, channels = 3)
   image_decoded = tf.image.convert_image_dtype(image_decoded, tf.float32)
   return image_decoded
@@ -59,19 +60,10 @@ if __name__ == '__main__':
         all_vars.restore(sess,'/home/nicolas/github/Algoritmos_vision/code/model/model')
 
         num_img = len(filename)
-        # skimage.io.imshow(enhanced)
-        # skimage.io.show()
-        print(type(enhanced))
         for i in range(num_img):
             enhanced,ori = sess.run([final,underwater])
             enhanced = np.uint8(enhanced* 255.)
-            skimage.io.imshow(enhanced)
-            skimage.io.show()
-            # print(type(enhanced))
-            # index = imgName[i].rfind('.')
-            # name = imgName[i][:index]
-            # skimage.io.imsave(results_path + name +'.png', enhanced)
-            # print('%d / %d images processed' % (i+1,num_img))
+            cv.imshow("image", enhanced)
 
         print('All finished')
    sess.close()
