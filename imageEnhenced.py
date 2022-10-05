@@ -6,12 +6,12 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import matplotlib.pyplot as plt
 os.environ["TFHUB_DOWNLOAD_PROGRESS"] = "True"
-
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # wget "https://user-images.githubusercontent.com/12981474/40157448-eff91f06-5953-11e8-9a37-f6b5693fa03f.png" -O original.png
 
 # Declaring Constants
-IMAGE_PATH = "original.png"
-SAVED_MODEL_PATH = "https://tfhub.dev/captain-pool/esrgan-tf2/1"    
+IMAGE_PATH = r"C:\Users\benja\github\Algoritmos_vision\diana3.jpeg"
+SAVED_MODEL_PATH = "https://tfhub.dev/captain-pool/esrgan-tf2/1"
 
 def preprocess_image(image_path):
   """ Loads image from path and preprocesses to make it model ready
@@ -61,8 +61,8 @@ def plot_image(image, title=""):
 hr_image = preprocess_image(IMAGE_PATH)
 
   # Plotting Original Resolution image
-plot_image(tf.squeeze(hr_image), title="Original Image")
-save_image(tf.squeeze(hr_image), filename="Original Image")
+plot_image(tf.squeeze(hr_image), title="Diana Image")
+save_image(tf.squeeze(hr_image), filename="Diana Image")
 
 model = hub.load(SAVED_MODEL_PATH)
 
@@ -72,5 +72,5 @@ fake_image = tf.squeeze(fake_image)
 print("Time Taken: %f" % (time.time() - start))
 
 # Plotting Super Resolution Image
-plot_image(tf.squeeze(fake_image), title="Super Resolution")
-save_image(tf.squeeze(fake_image), filename="Super Resolution")
+plot_image(tf.squeeze(fake_image), title="Diana3 Resolution")
+save_image(tf.squeeze(fake_image), filename="Diana3 Resolution")
