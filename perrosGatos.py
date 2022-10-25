@@ -3,10 +3,11 @@ import tensorflow_datasets as tfds
 import matplotlib.pyplot as plt # importar libreria para poder plotear datos
 import cv2
 import numpy as np
-from tensorflow.keras.callbacks import TensorBoard
+
 
 
 TAMANO_IMG = 100
+setattr(tfds.image_classification.cats_vs_dogs, '_URL',"https://download.microsoft.com/download/3/E/1/3E1C3F21-ECDB-4869-8368-6DEBA77B919F/kagglecatsanddogs_5340.zip")
 datos, metadatos = tfds.load('cats_vs_dogs', as_supervised=True, with_info=True) # carga el dataset
 print(metadatos) # imprime las caracteristicas del dataset
 
@@ -50,11 +51,12 @@ for imagen, etiqueta in datos_entramiento:
 
 x = np.array(x).astype(float) /255 # se realiza un casting para cambiar el tipo de datos a flotante
 
-print(x) # aqui el vector x tiene un arreglo de 23262 , 100, 100, 1 debido al casting que se hizo en la parte superior
-print(y) # hasta este punto se tienen puros tensores en el vector Y, aunque no se sabe a ciencia cierta por que?
+# print(x) # aqui el vector x tiene un arreglo de 23262 , 100, 100, 1 debido al casting que se hizo en la parte superior
+# print(y) # hasta este punto se tienen puros tensores en el vector Y, aunque no se sabe a ciencia cierta por que?
 
 print(x.shape)
-
+y = np.array(y)
+print(y.shape)
 
 #arquitectura redes neuronals convolucionales para clasificacion de datos
 # MODELO DE LA RED NEURONAL
@@ -108,16 +110,21 @@ modeloCNN2.compile(optimizer='adam',  # optimizador Adam revisar
                     loss='binary_crossentropy', # funcion de perdida revisar que es
                     metrics=['accuracy']) # y metricas de presicion
 
-tensorboardDenso = TensorBoard(log_dir=r"C:/Users/benja/github/Algoritmos_vision/logs/denso") # solo para verificar el funcionamiento de la red neuronal
-print("hasta aqui")
+from tensorflow.keras.callbacks import TensorBoard
 
-modeloDenso.fit(x, y, batch_size=32,
-                validation_split=0.15,
-                epochs=100,
-                callbacks=[tensorboardDenso])
+# tensorboardDenso = TensorBoard(log_dir="logs/denso") # solo para verificar el funcionamiento de la red neuronal
+# modeloDenso.fit(x, y, batch_size = 32, # se introducen las dos entradas x que contiene las imagnes y Y que contiene los nombres, con un tamano de lote de 32
+#                 validation_split = 0.15, # se separa la cantidad de datos para validacion y pruebas training and testing, para pruebas 15 por ciento
+#                 epochs = 100, #  indicamos que queremos 100 epocas
+#                 callbacks = [tensorboardDenso])# agregamos un arreglo de callbacks, usamos el callback de tensorboard despues de cada una de las 100 epocas guardara en el archivo el resultado de cada epoca para que lo podamos visualizar despues
+#                 # entrenar el modelo con la funciojn fit
 
-# modeloDenso.fit(x, y, batch_size=32, # se introducen las dos entradas x que contiene las imagnes y Y que contiene los nombres, con un tamano de lote de 32
-#                 validation_split=0.15, # se separa la cantidad de datos para validacion y pruebas training and testing, para pruebas 15 por ciento
-#                 epochs=100, #  indicamos que queremos 100 epocas
-#                 callbacks=[tensorboardDenso])# agregamos un arreglo de callbacks, usamos el callback de tensorboard despues de cada una de las 100 epocas guardara en el archivo el resultado de cada epoca para que lo podamos visualizar despues
+
+tensorboardCNN = TensorBoard(log_dir="logs/CNN") # solo para verificar el funcionamiento de la red neuronal
+modeloCNN.fit(x, y, batch_size = 32, # se introducen las dos entradas x que contiene las imagnes y Y que contiene los nombres, con un tamano de lote de 32
+                validation_split = 0.15, # se separa la cantidad de datos para validacion y pruebas training and testing, para pruebas 15 por ciento
+                epochs = 100, #  indicamos que queremos 100 epocas
+                callbacks = [tensorboardCNN])# agregamos un arreglo de callbacks, usamos el callback de tensorboard despues de cada una de las 100 epocas guardara en el archivo el resultado de cada epoca para que lo podamos visualizar despues
                 # entrenar el modelo con la funciojn fit
+
+
