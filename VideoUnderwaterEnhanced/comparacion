@@ -325,7 +325,53 @@ tf.Tensor(
 filename_tensor2
 
 
+3.jpg
+/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/3.jpg
+2.jpg
+/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/2.jpg
+1.jpg
+/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/1.jpg
 
+
+4.png
+/home/nicolas/github/Algoritmos_vision/code/img/input/4.png
+3.jpg
+/home/nicolas/github/Algoritmos_vision/code/img/input/3.jpg
+Screenshot from 2022-09-28 03-30-49.png
+/home/nicolas/github/Algoritmos_vision/code/img/input/Screenshot from 2022-09-28 03-30-49.png
+2.jpg
+/home/nicolas/github/Algoritmos_vision/code/img/input/2.jpg
+1.jpg
+/home/nicolas/github/Algoritmos_vision/code/img/input/1.jpg
+
+
+filename_tensor
+Tensor("Const:0", shape=(5,), dtype=string)
+filename_tensor2
+
+
+tf.Tensor(
+[b'/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/3.jpg'
+ b'/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/2.jpg'
+ b'/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/1.jpg'], shape=(3,), dtype=string)
+filename_tensor2
+
+
+<type 'list'>
+<class 'tensorflow.python.framework.ops.Tensor'>
+
+
+
+<class 'list'>
+2022-10-28 12:31:00.777286: E tensorflow/stream_executor/cuda/cuda_driver.cc:265] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+2022-10-28 12:31:00.777474: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:169] retrieving CUDA diagnostic information for host: nicolas-XPS-15-9560
+2022-10-28 12:31:00.777513: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:176] hostname: nicolas-XPS-15-9560
+2022-10-28 12:31:00.777867: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:200] libcuda reported version is: 515.48.7
+2022-10-28 12:31:00.777988: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:204] kernel reported version is: 515.48.7
+2022-10-28 12:31:00.778015: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:310] kernel version seems to match DSO: 515.48.7
+2022-10-28 12:31:00.779123: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+<class 'tensorflow.python.framework.ops.EagerTensor'>
 
 
 
