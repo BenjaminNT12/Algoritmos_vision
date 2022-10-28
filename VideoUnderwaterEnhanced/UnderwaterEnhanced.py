@@ -1,5 +1,4 @@
 import os
-from matplotlib import image
 import skimage.io
 import numpy as np
 import tensorflow as tf
@@ -13,6 +12,9 @@ import modelo
 # Windows
 # input_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
 # results_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
+
+v1.disable_eager_execution()
+v1.reset_default_graph()
 
 # Ubuntu
 input_path = '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
@@ -48,8 +50,11 @@ if __name__ == '__main__':
     print(type(filename))
     # ahora convertimos la lista en tensores de tensorflow
 
-    filename_tensor = tf.convert_to_tensor(filename, dtype=tf.string) # Converts the given value to a Tensor
+    filename_tensor = v1.convert_to_tensor(filename, dtype=tf.string) # Converts the given value to a Tensor
     
+    print("Es un tensor?")
+    print(tf.is_tensor(filename_tensor))
+
     print(type(filename_tensor))
 
     print("filename_tensor")
