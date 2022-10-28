@@ -13,6 +13,7 @@ import modelo
 # input_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
 # results_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
 
+# Se agrego esta linea para evitar que la conversion a un tensor se hiciera de un Tensor a un EagerTensor
 v1.disable_eager_execution()
 v1.reset_default_graph()
 
@@ -37,29 +38,13 @@ if __name__ == '__main__':
 
     filename = os.listdir(input_path) # cargamos el directorio de donde se encuentras las imagenes de entrada
 
-    print("filename")
-    print(filename)
-    print("filename2")
-
     for i in range(len(filename)): # hacemos un ciclo de la longitud del numero de archivos que estan dentro del directorio
-        print(filename[i]) # imprime el nombre de los archivos
         #hacemos la suma del nombre de la entrada con el nombre del archivo
         filename[i] = input_path + filename[i]
-        print(filename[i])
 
-    print(type(filename))
     # ahora convertimos la lista en tensores de tensorflow
 
     filename_tensor = v1.convert_to_tensor(filename, dtype=tf.string) # Converts the given value to a Tensor
-    
-    print("Es un tensor?")
-    print(tf.is_tensor(filename_tensor))
-
-    print(type(filename_tensor))
-
-    print("filename_tensor")
-    print(filename_tensor)
-    print("filename_tensor2")
 # The simplest way to create a dataset is to create it from a python list
 # Crea el dataset para el entrenamientoxz
     dataset = v1.data.Dataset.from_tensor_slices((filename_tensor))
@@ -73,17 +58,10 @@ if __name__ == '__main__':
     # elements using for elem in dataset: ... or by explicitly creating iterator 
     # via iterator = iter(dataset) and fetching its elements via values = next(iterator).
     # iterator = iter(dataset)
-    print("iterador")
-    print(iterator.get_next())
     underwater = iterator.get_next()
 
-
-    print("underwater")
-    print(underwater)
-    print("underwater2")
 ##############################################
     output = modelo.Network(underwater)
-    print("output")
     output = modelo.compressedHE(output)
 ##############################################    
     # output = model.Network(underwater)
@@ -99,30 +77,15 @@ if __name__ == '__main__':
     # clip_value_max are set to clip_value_max.
 
     output = tf.clip_by_value(output, 0., 1.)
-    print("output")
-    print(output)
     final = output[0,:,:,:]
-    print("output2")
-
 ###################################################
     config = v1.ConfigProto()
     config.gpu_options.allow_growth=True
 
     with v1.Session(config=config) as sess:
-
-        print ("Loading model")
         all_vars = v1.trainable_variables()
-        print("all_vars")
-        print(all_vars)
-        print("all_vars2")
         all_vars = v1.train.Saver(var_list = all_vars)
-        print("all_var2")
-        print(all_vars)
-        print("all_vars3")
         all_vars.restore(sess,'/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
-        print("all_vars4")
-        print(all_vars)
-        print("all_vars5")
 
         num_img = len(filename)
         for i in range(num_img):
@@ -147,5 +110,3 @@ if __name__ == '__main__':
     plt.imshow(enhanced)
     plt.title('Enhanced')
     plt.show()
-
-    # _parse_function()

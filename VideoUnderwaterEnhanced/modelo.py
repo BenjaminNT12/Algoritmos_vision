@@ -46,19 +46,10 @@ def Network(images, in_channels = 16):
   with v1.variable_scope('Network',  reuse=v1.AUTO_REUSE):
 
     mean, var = tf.nn.moments(images, [1, 2], keepdims=False)
-    print("mean")
-    print(mean)
-    print("mean2")
     sigma = tf.sqrt(var)
-    print("sigma")
-    print(sigma)
-    print("sigma2")
     CONCAT = tf.concat([mean, sigma],-1)
 
     with v1.variable_scope('avg'):
-        print("CONCAT")
-        print(CONCAT)
-        print("CONCAT_2")
         h1 = v1.layers.dense(CONCAT, in_channels)
         h1 = tf.nn.relu(h1)
         
