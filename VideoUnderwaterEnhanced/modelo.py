@@ -43,6 +43,7 @@ def GuideBlock(H,miu,in_channels):
 
 #test
 #prueba ubuntu
+#test windows
 
 def Network(images, in_channels = 16):
   with v1.variable_scope('Network',  reuse=v1.AUTO_REUSE):
