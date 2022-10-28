@@ -1,10 +1,3 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-
-# This is the testing code of our paper and for non-commercial use only.
-# X. Fu, and X. Cao " Underwater image enhancement with global-local networks and compressed-histogram equalization",
-# Signal Processing: Image Communication, 2020. DOI: 10.1016/j.image.2020.115892
-
 import os
 import skimage.io
 import numpy as np
@@ -28,25 +21,53 @@ if __name__ == '__main__':
    imgName = os.listdir(input_path)
 
    filename = os.listdir(input_path)
+
+   print("filename")
+   print(filename)
+   print("filename2")
+
    for i in range(len(filename)):
-      filename[i] = input_path + filename[i]
+        print(filename[i]) # imprime el nombre de los archivos
+        #hacemos la suma del nombre de la entrada con el nombre del archivo
+        filename[i] = input_path + filename[i]
+        print(filename[i])
+
+
+   print(type(filename))
 
    filename_tensor = tf.convert_to_tensor(filename, dtype=tf.string)
+
+   print(type(filename_tensor))
+
+   print("filename_tensor")
+   print(filename_tensor)
+   print("filename_tensor2")
 
    dataset = tf.data.Dataset.from_tensor_slices((filename_tensor))
    dataset = dataset.map(_parse_function)
    dataset = dataset.prefetch(buffer_size = 10)
    dataset = dataset.batch(1).repeat()
    iterator = dataset.make_one_shot_iterator()
+   
+   print("iterator")
+   print(iterator)
+   print("iterator2")
 
    underwater = iterator.get_next()
+
+
+   print("underwater")
+   print(underwater)
+   print("underwater2")
 
    output = model.Network(underwater)
    output = model.compressedHE(output)
 
    output = tf.clip_by_value(output, 0., 1.)
+   print("output")
+   print(output)
    final = output[0,:,:,:]
-
+   print("output2")
    config = tf.ConfigProto()
    config.gpu_options.allow_growth=True
 
@@ -54,8 +75,17 @@ if __name__ == '__main__':
 
         print ("Loading model")
         all_vars = tf.trainable_variables()
+        print("all_vars")
+        print(all_vars)
+        print("all_vars2")
         all_vars = tf.train.Saver(var_list = all_vars)
+        print("all_var2")
+        print(all_vars)
+        print("all_vars3")
         all_vars.restore(sess,'/home/nicolas/github/Algoritmos_vision/code/model/model')
+        print("all_vars4")
+        print(all_vars)
+        print("all_vars5")
 
         num_img = len(filename)
         for i in range(num_img):

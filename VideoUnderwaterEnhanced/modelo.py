@@ -35,44 +35,46 @@ def compressedHE(_input):
 
 def GuideBlock(H,miu,in_channels):
 
-    WH = tf.keras.layers.conv2d(H, in_channels, 3, padding="SAME", use_bias=False)
-    b = tf.keras.layers.dense(miu, in_channels, use_bias=False)
+    WH = v1.layers.conv2d(H, in_channels, 3, padding="SAME", use_bias=False)
+    b = v1.layers.dense(miu, in_channels, use_bias=False)
     out = WH + b
 
     return out
 
-#test
-#prueba ubuntu
-#test windows
-#prueba ubuntu 2
 
 def Network(images, in_channels = 16):
   with v1.variable_scope('Network',  reuse=v1.AUTO_REUSE):
 
     mean, var = tf.nn.moments(images, [1, 2], keepdims=False)
+    print("mean")
+    print(mean)
+    print("mean2")
     sigma = tf.sqrt(var)
+    print("sigma")
+    print(sigma)
+    print("sigma2")
     CONCAT = tf.concat([mean, sigma],-1)
 
     with v1.variable_scope('avg'):
         print("CONCAT")
         print(CONCAT)
-        print("relu")
-        h1 = tf.keras.layers.Dense(CONCAT, in_channels)
+        print("CONCAT_2")
+        h1 = v1.layers.dense(CONCAT, in_channels)
         h1 = tf.nn.relu(h1)
         
-        h2 = tf.keras.layers.Dense(h1, in_channels)
+        h2 = v1.layers.dense(h1, in_channels)
         h2 = tf.nn.relu(h2)
 
-        h3 = tf.keras.layers.Dense(h2, in_channels)
+        h3 = v1.layers.dense(h2, in_channels)
         h3 = tf.nn.relu(h3)
 
         h = tf.concat([h1,h2,h3],-1)
 
-        res = tf.keras.layers.Dense(h,3)
+        res = v1.layers.dense(h,3)
         new_mean =  tf.nn.sigmoid(mean + res)
 
 
-    with tf.variable_scope('local'):
+    with v1.variable_scope('local'):
         I_centered = images - mean
 
         conv1 = GuideBlock(I_centered, res, in_channels)
@@ -88,7 +90,7 @@ def Network(images, in_channels = 16):
         J_centered = GuideBlock(conv,res,3)
 
 
-    with tf.variable_scope('output'):
+    with v1.variable_scope('output'):
         J = tf.nn.relu(J_centered + new_mean)
         J = tf.minimum(J, tf.ones_like(J))
 

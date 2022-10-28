@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import os
 from matplotlib import image
 import skimage.io
@@ -11,8 +10,14 @@ import modelo
 # tf.reset_default_graph() # Clears the default graph stack and resets the global default graph.
 # por el momento no se requiere, ya que para resetear un grafico se realiza de manera diferente  
 
-input_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
-results_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
+# Windows
+# input_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
+# results_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
+
+# Ubuntu
+input_path = '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
+results_path = '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
+
 
 def _parse_function(filename):
     image_string = tf.io.read_file(filename) # Reads the contents of file. 
@@ -26,7 +31,13 @@ def _parse_function(filename):
 
 if __name__ == '__main__':
 
+    imgName = os.listdir(input_path)
+
     filename = os.listdir(input_path) # cargamos el directorio de donde se encuentras las imagenes de entrada
+
+    print("filename")
+    print(filename)
+    print("filename2")
 
     for i in range(len(filename)): # hacemos un ciclo de la longitud del numero de archivos que estan dentro del directorio
         print(filename[i]) # imprime el nombre de los archivos
@@ -38,23 +49,33 @@ if __name__ == '__main__':
     # ahora convertimos la lista en tensores de tensorflow
 
     filename_tensor = tf.convert_to_tensor(filename, dtype=tf.string) # Converts the given value to a Tensor
-    print("imprimir tensores")
+    
+    print(type(filename_tensor))
+
+    print("filename_tensor")
     print(filename_tensor)
+    print("filename_tensor2")
 # The simplest way to create a dataset is to create it from a python list
 # Crea el dataset para el entrenamientoxz
-    dataset = tf.data.Dataset.from_tensor_slices((filename_tensor))
+    dataset = v1.data.Dataset.from_tensor_slices((filename_tensor))
     dataset = dataset.map(_parse_function) # convierte una imagene a un mapeo flotante de 32bits
     # .prefetch This allows later elements to be prepared while the current element is being processed
     dataset = dataset.prefetch(buffer_size = 10)
-    dataset = dataset.repeat(1)
+    
+    dataset = dataset.batch(1).repeat()
+    iterator = dataset.make_one_shot_iterator()
     # In TF 2 datasets are Python iterables which means you can consume their 
     # elements using for elem in dataset: ... or by explicitly creating iterator 
     # via iterator = iter(dataset) and fetching its elements via values = next(iterator).
-    iterator = iter(dataset)
+    # iterator = iter(dataset)
     print("iterador")
     print(iterator.get_next())
     underwater = iterator.get_next()
+
+
     print("underwater")
+    print(underwater)
+    print("underwater2")
 ##############################################
     output = modelo.Network(underwater)
     print("output")
@@ -73,8 +94,10 @@ if __name__ == '__main__':
     # clip_value_max are set to clip_value_max.
 
     output = tf.clip_by_value(output, 0., 1.)
+    print("output")
     print(output)
-    final = output[0, :, :, :]
+    final = output[0,:,:,:]
+    print("output2")
 
 ###################################################
     config = v1.ConfigProto()
@@ -84,8 +107,17 @@ if __name__ == '__main__':
 
         print ("Loading model")
         all_vars = v1.trainable_variables()
+        print("all_vars")
+        print(all_vars)
+        print("all_vars2")
         all_vars = v1.train.Saver(var_list = all_vars)
-        all_vars.restore(sess,'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
+        print("all_var2")
+        print(all_vars)
+        print("all_vars3")
+        all_vars.restore(sess,'/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
+        print("all_vars4")
+        print(all_vars)
+        print("all_vars5")
 
         num_img = len(filename)
         for i in range(num_img):

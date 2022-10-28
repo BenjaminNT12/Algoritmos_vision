@@ -1,11 +1,3 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-
-# This is the testing code of our paper and for non-commercial use only.
-# X. Fu, and X. Cao " Underwater image enhancement with global-local networks and compressed-histogram equalization",
-# Signal Processing: Image Communication, 2020. DOI: 10.1016/j.image.2020.115892
-
-
 import tensorflow as tf
 import numpy as np
 
@@ -57,10 +49,20 @@ def Network(images,in_channels = 16):
   with tf.variable_scope('Network',  reuse=tf.AUTO_REUSE):
 
     mean, var = tf.nn.moments(images, [1, 2], keep_dims=False)
+    print("mean")
+    print(mean)
+    print("mean2")
     sigma = tf.sqrt(var)
+    print("sigma")
+    print(sigma)
+    print("sigma2")
+
     CONCAT = tf.concat([mean,sigma],-1)
 
     with tf.variable_scope('avg'):
+      print("CONCAT")
+      print(CONCAT)
+      print("CONCAT_2")
       h1 = tf.layers.dense(CONCAT, in_channels)
       h1 = tf.nn.relu(h1)
 
