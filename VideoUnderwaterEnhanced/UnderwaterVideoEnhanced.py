@@ -13,14 +13,6 @@ import scipy.misc
 v1.disable_eager_execution()
 v1.reset_default_graph()
 
-# Windows
-# input_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
-# results_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
-
-# Ubuntu
-# input_path = '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
-# results_path = '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
-
 
 def _parse_function(filename):
     image_decode = tf.image.convert_image_dtype(filename, tf.float32) # Convert image to dtype, scaling its values if needed.
@@ -31,18 +23,20 @@ if __name__ == '__main__':
     path = r'C:/Users/benja/GitHubVsCode/Algoritmos_vision/video3.mp4'
     video = cv.VideoCapture(path)
 
+    config = v1.ConfigProto()
+    config.gpu_options.allow_growth=False
+
     while True:
         _, frame = video.read()
         # frame = cv.cvtColor(frame2, cv.COLOR_BAYER_BG2GRAY)
 
-        scale_percent = 40 # percent of original size
+        scale_percent = 80 # percent of original size
         width = int(frame.shape[1] * scale_percent / 100)
         height = int(frame.shape[0] * scale_percent / 100)
         dim = (width, height)
         
         # resize image
         frame = cv.resize(frame, dim, interpolation = cv.INTER_AREA)
-
 
         filename_tensor = v1.convert_to_tensor(frame)
         
@@ -61,8 +55,6 @@ if __name__ == '__main__':
         output = tf.clip_by_value(output, 0., 1.)
         final = output[0,:,:,:]
         ###################################################
-        config = v1.ConfigProto()
-        config.gpu_options.allow_growth=True
 
         with v1.Session(config=config) as sess:
             all_vars = v1.trainable_variables()
