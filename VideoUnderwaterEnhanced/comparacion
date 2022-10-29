@@ -374,9 +374,42 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <class 'tensorflow.python.framework.ops.EagerTensor'>
 
 
+filename_tensor
+Tensor("Const:0", shape=(352, 640, 3), dtype=uint8)
+filename_tensor2
+paso 1
+Tensor("args_0:0", shape=(640, 3), dtype=uint8)
+
+paso 1
+Tensor("ReadFile:0", shape=(), dtype=string)
+paso 2
+Tensor("ReadFile:0", shape=(), dtype=string)
+paso 3
+Tensor("ReadFile:0", shape=(), dtype=string)
+
+<class 'tensorflow.python.framework.ops.Tensor'>
+
+<class 'tensorflow.python.framework.ops.Tensor'>
+
+
+Tensor("Const:0", shape=(1,), dtype=string)
+
+Tensor("Const:0", shape=(352, 640, 3), dtype=uint8)
 
 
 
+<TensorSliceDataset element_spec=TensorSpec(shape=(), dtype=tf.string, name=None)>
+<MapDataset element_spec=TensorSpec(shape=(None, None, 3), dtype=tf.float32, name=None)>
+
+<TensorSliceDataset element_spec=TensorSpec(shape=(640, 3), dtype=tf.uint8, name=None)>
+<MapDataset element_spec=TensorSpec(shape=(640, 3), dtype=tf.float32, name=None)>
+
+Tensor("Shape:0", shape=(2,), dtype=int32)
+
+Tensor("convert_image:0", shape=(640, 3), dtype=float32)
+
+
+filenames = ops.convert_to_tensor(filenames, dtype=dtypes.string)
 
 
 
