@@ -9,23 +9,31 @@ import modelo
 # tf.reset_default_graph() # Clears the default graph stack and resets the global default graph.
 # por el momento no se requiere, ya que para resetear un grafico se realiza de manera diferente  
 
-# Windows
-# input_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
-# results_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
+
 
 # Se agrego esta linea para evitar que la conversion a un tensor se hiciera de un Tensor a un EagerTensor
 v1.disable_eager_execution()
 v1.reset_default_graph()
 
+# Windows
+input_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
+results_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
+
 # Ubuntu
-input_path = '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
-results_path = '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
+# input_path = '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
+# results_path = '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
 
 
 def _parse_function(filename):
-    image_string = tf.io.read_file(filename) # Reads the contents of file. 
+    image_string = tf.io.read_file(filename) # Reads the contents of file.
+    print("paso 1") 
+    print(image_string)
     image_decode = tf.image.decode_png(image_string, channels=3) # Decode a PNG-encoded image to a uint8 or uint16 tensor.
+    print("paso 2")
+    print(image_string)
     image_decode = tf.image.convert_image_dtype(image_decode, tf.float32) # Convert image to dtype, scaling its values if needed.
+    print("paso 3")
+    print(image_string)
     return image_decode
 
 # @tf.function
@@ -45,10 +53,15 @@ if __name__ == '__main__':
     # ahora convertimos la lista en tensores de tensorflow
 
     filename_tensor = v1.convert_to_tensor(filename, dtype=tf.string) # Converts the given value to a Tensor
+
+    print(filename_tensor)
+
 # The simplest way to create a dataset is to create it from a python list
 # Crea el dataset para el entrenamientoxz
     dataset = v1.data.Dataset.from_tensor_slices((filename_tensor))
+    print(dataset)
     dataset = dataset.map(_parse_function) # convierte una imagene a un mapeo flotante de 32bits
+    print(dataset)
     # .prefetch This allows later elements to be prepared while the current element is being processed
     dataset = dataset.prefetch(buffer_size = 10)
     
@@ -85,8 +98,11 @@ if __name__ == '__main__':
     with v1.Session(config=config) as sess:
         all_vars = v1.trainable_variables()
         all_vars = v1.train.Saver(var_list = all_vars)
-        all_vars.restore(sess,'/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
+        # Ubuntu
+        # all_vars.restore(sess,'/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
 
+        # Windows 
+        all_vars.restore(sess,'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
         num_img = len(filename)
         for i in range(num_img):
 
