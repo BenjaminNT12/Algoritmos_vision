@@ -31,8 +31,8 @@ def image_to_tensor(image):
 
 if __name__ == '__main__':
 
-    path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/video1.mp4'
-    # path = '/home/nicolas/github/Algoritmos_vision/video1.mp4'
+    # path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/video1.mp4'
+    path = '/home/nicolas/github/Algoritmos_vision/video1.mp4'
     video = cv.VideoCapture(path)
 
     config = v1.ConfigProto()
@@ -43,6 +43,7 @@ if __name__ == '__main__':
         tiempo_previo = time.time()
         
         _, frame = video.read()
+        
         underwater = image_to_tensor(frame)
         ##############################################
         output = modelo2.Network(underwater)
@@ -56,8 +57,8 @@ if __name__ == '__main__':
         with v1.Session(config = config) as sess:
             all_vars = v1.trainable_variables()
             all_vars = v1.train.Saver(var_list = all_vars)
-            # all_vars.restore(sess, '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # ubuntu
-            all_vars.restore(sess,'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # windows
+            all_vars.restore(sess, '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # ubuntu
+            # all_vars.restore(sess,'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # windows
             enhanced, ori = sess.run([final, underwater])
             enhanced = np.uint8(enhanced* 255.)    
         sess.close()
