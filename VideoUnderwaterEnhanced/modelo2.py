@@ -2,6 +2,7 @@ from matplotlib import image
 import tensorflow as tf
 import tensorflow.compat.v1 as v1
 import numpy as np 
+import time
 
 def compressedHE(_input):  
     _input = tf.squeeze(_input)
@@ -43,14 +44,14 @@ def GuideBlock(H,miu,in_channels):
     return out
 
 
-def Network(images, in_channels = 16):
+def Network(images, in_channels = 3):
   with v1.variable_scope('Network',  reuse=v1.AUTO_REUSE):
 
     mean, var = tf.nn.moments(images, [0, 1], keepdims=False)
     sigma = tf.sqrt(var)
     CONCAT = tf.concat([mean, sigma],-1)
 
-    with v1.variable_scope('avg'):
+    with v1.variable_scope('avg', reuse=v1.AUTO_REUSE):
         h1 = v1.layers.dense(CONCAT, in_channels)
         h1 = tf.nn.relu(h1)
         
@@ -66,7 +67,7 @@ def Network(images, in_channels = 16):
         new_mean =  tf.nn.sigmoid(mean + res)
 
 
-    with v1.variable_scope('local'):
+    with v1.variable_scope('local', reuse=v1.AUTO_REUSE):
         I_centered = images - mean
 
         conv1 = GuideBlock(I_centered, res, in_channels)
@@ -82,7 +83,7 @@ def Network(images, in_channels = 16):
         J_centered = GuideBlock(conv,res,3)
 
 
-    with v1.variable_scope('output'):
+    with v1.variable_scope('output',reuse=v1.AUTO_REUSE):
         J = tf.nn.relu(J_centered + new_mean)
         J = tf.minimum(J, tf.ones_like(J))
 

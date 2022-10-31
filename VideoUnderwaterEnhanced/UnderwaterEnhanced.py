@@ -5,6 +5,7 @@ import tensorflow as tf
 import tensorflow.compat.v1 as v1
 import matplotlib.pyplot as plt
 import modelo
+import time
 
 # tf.reset_default_graph() # Clears the default graph stack and resets the global default graph.
 # por el momento no se requiere, ya que para resetear un grafico se realiza de manera diferente  
@@ -16,8 +17,8 @@ v1.disable_eager_execution()
 v1.reset_default_graph()
 
 # Windows
-input_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
-results_path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
+input_path = '/home/nicolas/Github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
+results_path = '/home/nicolas/Github/Algoritmos_vision/VideoUnderwaterEnhanced/img/output/' # the path of enhanced results
 
 # Ubuntu
 # input_path = '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/img/input/' # the path of testing images
@@ -102,18 +103,18 @@ if __name__ == '__main__':
         # all_vars.restore(sess,'/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
 
         # Windows 
-        all_vars.restore(sess,'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
+        all_vars.restore(sess,'/home/nicolas/Github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
         num_img = len(filename)
         for i in range(num_img):
-
+            tiempo_anterior = time.time()
             enhanced,ori = sess.run([final,underwater])
             enhanced = np.uint8(enhanced* 255.)
 
             index = imgName[i].rfind('.')
             name = imgName[i][:index]
-            skimage.io.imsave(results_path + name +'.png', enhanced)
+            # skimage.io.imsave(results_path + name +'.png', enhanced)
             print('%d / %d images processed' % (i+1,num_img))
-
+            print("tiempo anterior", tiempo_anterior , "tiempo linea a linea: ",tiempo_anterior - time.time(), "Frecuencia: ",1/(tiempo_anterior - time.time()))
         print('All finished')
     sess.close()
 ###################################################

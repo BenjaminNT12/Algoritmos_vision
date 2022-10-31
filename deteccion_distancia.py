@@ -7,7 +7,7 @@ from PIL import Image
 
 
 
-path = r'C:\Users\benja\github\Algoritmos_vision\video1.mp4'
+path = '/home/nicolas/Github/Algoritmos_vision/video1.mp4'
 video = cv.VideoCapture(path)
 
 p = False
