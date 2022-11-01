@@ -32,8 +32,8 @@ def image_to_tensor(image):
 if __name__ == '__main__':
 
     # path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/video1.mp4'
-    # path = '/home/nicolas/github/Algoritmos_vision/video1.mp4'
-    path = '/home/nicolas/Github/Algoritmos_vision/video1.mp4'
+    path = '/home/nicolas/github/Algoritmos_vision/video1.mp4'
+    # path = '/home/nicolas/Github/Algoritmos_vision/video1.mp4'
     video = cv.VideoCapture(path)
 
     # tiempo_previo = time.time()
@@ -56,8 +56,8 @@ if __name__ == '__main__':
             if firs_time == True:
                 all_vars = v1.trainable_variables()
                 all_vars = v1.train.Saver(var_list = all_vars)
-                all_vars.restore(sess, '/home/nicolas/Github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
-                # all_vars.restore(sess, '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
+                # all_vars.restore(sess, '/home/nicolas/Github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
+                all_vars.restore(sess, '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
                 # all_vars.restore(sess,'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # windows
                 print("first time")
                 firs_time = False
