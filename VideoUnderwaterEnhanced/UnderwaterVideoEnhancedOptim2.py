@@ -31,8 +31,8 @@ def image_to_tensor(image):
 
 if __name__ == '__main__':
 
-    # path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/video1.mp4'
-    path = '/home/nicolas/github/Algoritmos_vision/video1.mp4'
+    path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/video1.mp4'
+    # path = '/home/nicolas/github/Algoritmos_vision/video1.mp4'
     # path = '/home/nicolas/Github/Algoritmos_vision/video1.mp4'
     video = cv.VideoCapture(path)
 
@@ -49,24 +49,25 @@ if __name__ == '__main__':
             _, frame = video.read()
             
             underwater = image_to_tensor(frame)
-        
             output = modelo2.Network(underwater)
             output = modelo2.compressedHE(output)
             
             if firs_time == True:
+                underwater2 = underwater      
                 all_vars = v1.trainable_variables()
                 all_vars = v1.train.Saver(var_list = all_vars)
                 # all_vars.restore(sess, '/home/nicolas/Github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
-                all_vars.restore(sess, '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
-                # all_vars.restore(sess,'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # windows
+                # all_vars.restore(sess, '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
+                all_vars.restore(sess,'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # windows
                 print("first time")
                 firs_time = False
                 
-
             output = tf.clip_by_value(output, 0., 1.) # escala los valores del tensor entre .0 y .1
             final = output[0,:,:,:]
-            
+            # if firs_time == True:
             enhanced, ori = sess.run([final, underwater])
+            # else:
+            #     enhanced, ori = sess.run([final, underwater])
             enhanced = np.uint8(enhanced* 255.)
             print("tiempo anterior", tiempo_anterior , "tiempo linea a linea: ",tiempo_anterior - time.time(), "Frecuencia: ",1/(tiempo_anterior - time.time()))
 
