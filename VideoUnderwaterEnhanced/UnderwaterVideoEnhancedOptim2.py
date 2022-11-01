@@ -23,16 +23,22 @@ def image_to_tensor(image):
     filename_tensor = v1.convert_to_tensor(image)
     tensor = tf.expand_dims(filename_tensor , 0) # paso necesario para completar el tensor, agrega las dimensiones necesairas
     dataset = v1.data.Dataset.from_tensor_slices((tensor))
+    print("from_tensor_slices: ", dataset)
     dataset = dataset.map(_parse_function) # convierte una imagene a un mapeo flotante de 32bits
+    print("_parse_function: ", dataset)
     dataset = dataset.prefetch(buffer_size = 1)        
+    print("prefetch: ", dataset)
     dataset = dataset.batch(1).repeat()
+    print("batch: ", dataset)
     iterator = dataset.make_one_shot_iterator()
+    print("iterator: ", iterator)
+    print("iterator.get_next(): ", iterator.get_next())
     return iterator.get_next()
 
 if __name__ == '__main__':
 
-    path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/video1.mp4'
-    # path = '/home/nicolas/github/Algoritmos_vision/video1.mp4'
+    # path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/video1.mp4'
+    path = '/home/nicolas/github/Algoritmos_vision/video1.mp4'
     # path = '/home/nicolas/Github/Algoritmos_vision/video1.mp4'
     video = cv.VideoCapture(path)
 
@@ -49,6 +55,7 @@ if __name__ == '__main__':
             _, frame = video.read()
             
             underwater = image_to_tensor(frame)
+            print(underwater)
             output = modelo2.Network(underwater)
             output = modelo2.compressedHE(output)
             
@@ -57,17 +64,19 @@ if __name__ == '__main__':
                 all_vars = v1.trainable_variables()
                 all_vars = v1.train.Saver(var_list = all_vars)
                 # all_vars.restore(sess, '/home/nicolas/Github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
-                # all_vars.restore(sess, '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
-                all_vars.restore(sess,'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # windows
+                all_vars.restore(sess, '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
+                # all_vars.restore(sess,'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # windows
                 print("first time")
                 firs_time = False
                 
             output = tf.clip_by_value(output, 0., 1.) # escala los valores del tensor entre .0 y .1
             final = output[0,:,:,:]
-            # if firs_time == True:
-            enhanced, ori = sess.run([final, underwater])
-            # else:
-            #     enhanced, ori = sess.run([final, underwater])
+            if firs_time == True:
+                print("primer frame")
+                enhanced, ori = sess.run(fetches=[final, underwater])
+            else:
+                print("segundo frame")
+                enhanced = tf.Tensor.eval(final)
             enhanced = np.uint8(enhanced* 255.)
             print("tiempo anterior", tiempo_anterior , "tiempo linea a linea: ",tiempo_anterior - time.time(), "Frecuencia: ",1/(tiempo_anterior - time.time()))
 
