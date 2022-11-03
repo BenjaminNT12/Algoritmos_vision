@@ -149,7 +149,7 @@ tensorboardDenso = TensorBoard(log_dir='logs/denso')
 
 modeloDenso.fit(X, y, batch_size=32,
                 validation_split=0.15,
-                 =100,
+                epochs = 100,
                 callbacks=[tensorboardDenso])
 
 
