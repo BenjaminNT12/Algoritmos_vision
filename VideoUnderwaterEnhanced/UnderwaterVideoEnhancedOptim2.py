@@ -23,16 +23,16 @@ def image_to_tensor(image):
     filename_tensor = v1.convert_to_tensor(image)
     tensor = tf.expand_dims(filename_tensor , 0) # paso necesario para completar el tensor, agrega las dimensiones necesairas
     dataset = v1.data.Dataset.from_tensor_slices((tensor))
-    print("from_tensor_slices: ", dataset)
+    # print("from_tensor_slices: ", dataset)
     dataset = dataset.map(_parse_function) # convierte una imagene a un mapeo flotante de 32bits
-    print("_parse_function: ", dataset)
+    # print("_parse_function: ", dataset)
     dataset = dataset.prefetch(buffer_size = 1)        
-    print("prefetch: ", dataset)
+    # print("prefetch: ", dataset)
     dataset = dataset.batch(1).repeat()
-    print("batch: ", dataset)
+    # print("batch: ", dataset)
     iterator = dataset.make_one_shot_iterator()
-    print("iterator: ", iterator)
-    print("iterator.get_next(): ", iterator.get_next())
+    # print("iterator: ", iterator)
+    # print("iterator.get_next(): ", iterator.get_next())
     return iterator.get_next()
 
 if __name__ == '__main__':
@@ -55,22 +55,11 @@ if __name__ == '__main__':
             counter += 1
             tiempo_anterior = time.time()
             _, frame = video.read()
-            filename_tensor2 = v1.convert_to_tensor(frame)
-            tensor_eval = tf.expand_dims(filename_tensor2 , 0) # paso necesario para completar el tensor, agrega las dimensiones necesairas
-            dataset = v1.data.Dataset.from_tensor_slices((tensor_eval))
-            print("from_tensor_slices: ", dataset)
-            dataset = dataset.map(_parse_function)
-            dataset = dataset.prefetch(buffer_size = 1)        
-            print("prefetch: ", dataset)
-            dataset = dataset.batch(1).repeat()
-            print("batch: ", dataset)
-            iterator = dataset.make_one_shot_iterator()
+
             if firs_time == True:
                 underwater = image_to_tensor(frame)
-                print(underwater)
                 output = modelo2.Network(underwater)
-                output = modelo2.compressedHE(output)
-                underwater2 = underwater      
+                output = modelo2.compressedHE(output)    
                 all_vars = v1.trainable_variables()
                 all_vars = v1.train.Saver(var_list = all_vars)
                 all_vars.restore(sess, '/home/nicolas/Github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model')
@@ -79,18 +68,11 @@ if __name__ == '__main__':
                 print("first time")
                 output = tf.clip_by_value(output, 0., 1.) # escala los valores del tensor entre .0 y .1
                 final = output[0,:,:,:]
-                
-            if firs_time == True:
-                print("primer frame")
-                enhanced, ori = sess.run(fetches=[final, underwater])
-                writer = v1.summary.FileWriter("./logs", sess.graph)
                 firs_time = False
-            # writer.add_summary(enhanced, counter)
-            # writer.add_summary(ori, counter)
-            else:
-                print("segundo frame")
-                enhanced = tf.Tensor.eval(iterator.get_next())
-            enhanced = np.uint8(enhanced* 255.)
+
+            enhanced, ori = sess.run(fetches=[final, underwater])
+            # writer = v1.summary.FileWriter("./logs", sess.graph)
+            # enhanced = np.uint8(enhñanced* 255.)
             cv.imshow("enhanced", enhanced)
             print("tiempo anterior", tiempo_anterior , "tiempo linea a linea: ",tiempo_anterior - time.time(), "Frecuencia: ",1/(tiempo_anterior - time.time()))
 
