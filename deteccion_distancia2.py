@@ -7,8 +7,8 @@ from PIL import Image
 
 
 
-path = r'video2.mp4'
-video = cv.VideoCapture(path)
+# path = r'video2.mp4'
+video = cv.VideoCapture(0)
 
 p = False
 down= False
