@@ -49,12 +49,13 @@ if __name__ == '__main__':
     config.gpu_options.allow_growth=False
 
     firs_time = True
+    firs_time2 = True
     counter = 0
+    _, frame = video.read()
     with v1.Session(config = config) as sess:
         while True:
             counter += 1
             tiempo_anterior = time.time()
-            _, frame = video.read()
             underwater = image_to_tensor(frame)
             output = modelo2.Network(underwater)
             output = modelo2.compressedHE(output)    
@@ -70,7 +71,13 @@ if __name__ == '__main__':
 
             output = tf.clip_by_value(output, 0., 1.) # escala los valores del tensor entre .0 y .1
             final = output[0,:,:,:]
-            enhanced, ori = sess.run(fetches=[final, underwater])
+            # enhanced, ori = sess.run(fetches=[final, underwater])
+            if firs_time2 == True:
+                enhanced, ori = sess.run(fetches=[final, underwater])
+                firs_time2 = False
+            else:
+                enhanced, ori = sess.run(fetches=[final, underwater],feed_dict= frame)
+                
             cv.imshow("enhanced", enhanced)
             # print(type(ori))
             print("tiempo anterior", tiempo_anterior , "tiempo linea a linea: ",tiempo_anterior - time.time(), "Frecuencia: ",1/(tiempo_anterior - time.time()))
