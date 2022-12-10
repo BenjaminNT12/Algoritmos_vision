@@ -37,9 +37,9 @@ def image_to_tensor(image):
 
 if __name__ == '__main__':
 
-    # path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/video1.mp4' # windows xps
+    path = 'C:/Users/benja/GitHubVsCode/Algoritmos_vision/video1.mp4' # windows xps
     # path = '/home/nicolas/Github/Algoritmos_vision/video1.mp4' # ubuntu cinvestav
-    path = '/home/nicolas/github/Algoritmos_vision/video1.mp4' # ubuntu xps
+    # path = '/home/nicolas/github/Algoritmos_vision/video1.mp4' # ubuntu xps
     video = cv.VideoCapture(path)
 
     # tiempo_previo = time.time()
@@ -64,8 +64,8 @@ if __name__ == '__main__':
                 all_vars = v1.trainable_variables()
                 all_vars = v1.train.Saver(var_list = all_vars)
                 # all_vars.restore(sess, '/home/nicolas/Github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') #ubuntu cinvestav
-                # all_vars.restore(sess,'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # windows
-                all_vars.restore(sess, '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # ubuntu xps
+                all_vars.restore(sess,'C:/Users/benja/GitHubVsCode/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # windows
+                # all_vars.restore(sess, '/home/nicolas/github/Algoritmos_vision/VideoUnderwaterEnhanced/model/model') # ubuntu xps
                 firs_time = False
                 print("first time")
 
