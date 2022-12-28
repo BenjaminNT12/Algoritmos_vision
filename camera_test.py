@@ -5,7 +5,7 @@ import cv2
 # WIDTH = HIGH_VALUE
 # HEIGHT = HIGH_VALUE
 
-captura = cv2.VideoCapture(2)
+captura = cv2.VideoCapture(0)
 
 # captura.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('D','I','V','X'))
 captura.set(3, 640)
