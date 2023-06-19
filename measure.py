@@ -11,14 +11,15 @@ import tensorflow as tf
 def captura_frame(origen):
   captura = cv.VideoCapture(origen)
   # print(captura.get(cv.CAP_PROP_FRAME_HEIGHT),captura.get(cv.CAP_PROP_FRAME_WIDTH),3);
-  new_frame = np.zeros((int(captura.get(cv.CAP_PROP_FRAME_HEIGHT)), int(captura.get(cv.CAP_PROP_FRAME_WIDTH)),int(3)),dtype=np.uint8)
+  # new_frame = np.zeros((int(captura.get(cv.CAP_PROP_FRAME_HEIGHT)), int(captura.get(cv.CAP_PROP_FRAME_WIDTH)),int(3)),dtype=np.uint8)
 
   while (captura.isOpened()):
     ret, imagen = captura.read()
-    new_frame = imagen
-    new_frame = np.fliplr(imagen) # matriz en espejo
+    imagen = cv.flip(imagen, 1) # matriz en espejo
+    # new_frame = imagen
+    # new_frame = np.fliplr(imagen) # matriz en espejo
     if ret == True: # si se lee el frame de manera correcta entra en el if
-      cv.imshow('video', new_frame)
+      cv.imshow('video', imagen)
       if cv.waitKey(1) & 0xFF == 0x1B: # detect if press esc key
         break
     else:
