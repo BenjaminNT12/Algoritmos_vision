@@ -7,11 +7,11 @@ import math
 # cap.set(3, 640)
 # cap.set(4, 480)
 
-cap = cv.VideoCapture("../Algoritmos_vision/Videos/motorbikes.mp4")
+cap = cv.VideoCapture("../Algoritmos_vision/Videos/people.mp4")
 
 
 
-model = YOLO('../Yolo-Weigths/yolov8l.pt')
+model = YOLO('../Yolo-Weigths/yolov8n.pt')
 
 className = ["Persona", "bicicleta", "automovil", "motocicleta", "casa", "plátano", "pelota", "teléfono", "ordenador", "semaforo", "libro", 
                  "cuchara", "árbol", "sol", "lámpara", "camisa", "zapato", "sombrero", "taza", "piano", "mesa", "pantalla", "ratón", 
