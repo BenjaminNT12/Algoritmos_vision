@@ -10,9 +10,9 @@ mask = cv.imread("../Algoritmos_vision/Videos/mask.png")
 # cv.imshow("mask", mask)
 # cv.waitKey(0)
 
-model = YOLO('../Yolo-Weigths/yolov8n.pt')
+model = YOLO('../Yolo-Weigths/yolov8l.pt')
 
-className = ["Persona", "bicicleta", "automovil", "motocicleta", "casa", "plátano", "pelota", "teléfono", "ordenador", "semaforo", "libro", 
+className = [    "Persona", "bicicleta", "automovil", "motocicleta", "casa", "plátano", "pelota", "teléfono", "ordenador", "semaforo", "libro", 
                  "cuchara", "árbol", "sol", "lámpara", "camisa", "zapato", "sombrero", "taza", "piano", "mesa", "pantalla", "ratón", 
                  "manzana", "naranja", "reloj", "papel", "lápiz", "puerta", "ventana", "gafas", "bicicleta", "jardín", "cartas", 
                  "televisión", "maleta", "cama", "cámara", "aire acondicionado", "balón", "vaso", "reloj despertador", "flores", 
@@ -25,6 +25,8 @@ className = ["Persona", "bicicleta", "automovil", "motocicleta", "casa", "pláta
 tracker = Sort(max_age=20, min_hits=3, iou_threshold=0.3)
 
 limits = [400, 297, 673, 297]
+totalCounts = []
+
 
 while True:
     ret, frame = cap.read()
@@ -73,12 +75,17 @@ while True:
         cvzone.cornerRect(frame, bbbox, l=9, rt=5, colorR=(255,0,0))
         cvzone.putTextRect(frame, f'{int(id)}', (max(0, x1), max(35,y1)), scale=2, thickness=3,offset=10)
 
-        cx, cy = x1+w//2, y1+h//2, # integracion enteras
+        cx, cy = x1+w//2, y1+h//2, # division entera
 
-        cv.circle(frame, (cx, cy), 3, (0, 0, 255), -1)
+        cv.circle(frame, (cx, cy), 3, (0, 0, 255), -1, cv.FILLED)
+
+        if limits[0] < cx < limits[2] and limits[1] - 15 < cy < limits[3] + 15:
+            if totalCounts.count(id) == 0:
+                totalCounts.append(id)
+
+    cvzone.putTextRect(frame, f'Conteo {len(totalCounts)}', (50,50))
 
     cv.imshow('frame', frame)
-    # cv.imshow('ImgRegion', imgRegion)
-    # cv.waitKey(1)
     if cv.waitKey(1) & 0xFF == 0x1B:    
         break
+
