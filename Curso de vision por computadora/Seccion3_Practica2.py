@@ -7,8 +7,10 @@
 import cv2
 
 # Cargar las dos imágenes
-image1 = cv2.imread('imagen1.jpg')
-image2 = cv2.imread('imagen2.jpg')
+path1 = r'C:\Users\LENOVO\github\Algoritmos_vision\Curso de vision por computadora\imagen1.jpg'
+image1 = cv2.imread(path1, 1)
+path2 = r'C:\Users\LENOVO\github\Algoritmos_vision\Curso de vision por computadora\imagen2.jpg'
+image2 = cv2.imread(path2, 1)
 
 # Crear los objetos SIFT o SURF para la detección y descripción de características
 detector = cv2.SIFT_create()
@@ -27,7 +29,7 @@ matches = matcher.knnMatch(descriptors1, descriptors2, k=2)
 # Filtrar los mejores emparejamientos según la relación de distancia
 good_matches = []
 for m, n in matches:
-    if m.distance < 0.75 * n.distance:
+    if m.distance < 0.9*n.distance:
         good_matches.append(m)
 
 # Dibujar los puntos de correspondencia en las imágenes

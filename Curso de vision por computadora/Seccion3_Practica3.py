@@ -42,7 +42,7 @@ while True:
         # Filtrar los mejores emparejamientos según la relación de distancia
         good_matches = []
         for m in matches:
-            if m.distance < 0.75 * m.distance:
+            if m.distance < m.distance:
                 good_matches.append(m)
 
         # Dibujar los puntos de correspondencia en el fotograma actual

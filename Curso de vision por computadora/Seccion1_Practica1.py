@@ -55,7 +55,8 @@
 import cv2
 
 # Cargar la imagen
-image = cv2.imread('imagen.jpg')
+path = r'C:\Users\LENOVO\github\Algoritmos_vision\Curso de vision por computadora\imagen.jpg'
+image = cv2.imread(path, 1)
 
 # Mostrar la imagen en una ventana
 cv2.imshow('Imagen original', image)

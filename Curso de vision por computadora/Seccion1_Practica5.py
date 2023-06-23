@@ -8,7 +8,8 @@ import cv2
 import numpy as np
 
 # Cargar la imagen
-image = cv2.imread('imagen.jpg')
+path = r'C:\Users\LENOVO\github\Algoritmos_vision\Curso de vision por computadora\imagen.jpg'
+image = cv2.imread(path, 1)
 
 # Definir los puntos de destino para la transformación
 rows, cols = image.shape[:2]
