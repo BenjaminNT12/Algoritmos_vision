@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 
-path = r'C:\Users\benja\github\Algoritmos_vision\video3.mp4'
+path = '/home/nicolas/Github/Algoritmos_vision/video3.mp4'
 video = cv.VideoCapture(path)
 # video = cv.VideoCapture(0)
 p = False
