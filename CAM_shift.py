@@ -3,9 +3,9 @@ import numpy as np
 import math
 import time
 
-path = r'C:\Users\benja\github\Algoritmos_vision\video1.mp4'
-video = cv.VideoCapture(path)
-# video = cv.VideoCapture(0)
+# path = r'C:\Users\benja\github\Algoritmos_vision\video1.mp4'
+# video = cv.VideoCapture(path)
+video = cv.VideoCapture(0)
 p = False
 down= False
 xi,yi = 0,0

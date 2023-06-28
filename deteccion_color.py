@@ -1,17 +1,5 @@
 #!/usr/bin/env python3
 
-"""
-File: opencv-open-file-color-test.py
-
-This Python 3 code is published in relation to the article below:
-https://www.bluetin.io/opencv/opencv-color-detection-filtering-python/
-
-Website:    www.bluetin.io
-Author:     Mark Heywood
-Date:	    8/12/2017
-Version     0.1.0
-License:    MIT
-"""
 
 from __future__ import division
 import cv2
