@@ -7,12 +7,13 @@ import time
 path = '/home/nicolas/Github/videos/video9.MOV'
 # path = 0
 
-tracker = cv.legacy.TrackerMOSSE_create()
+tracker = cv.legacy.TrackerKCF_create()
+
 start_second = 18
 restart_second = 18
 
 ix, iy = 0, 0
-xf, yf = 0, 0 
+xf, yf = 0, 0
 selection = False
 down = False
 
