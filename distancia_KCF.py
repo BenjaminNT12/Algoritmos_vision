@@ -9,8 +9,8 @@ path = '/home/nicolas/Github/videos/video9.MOV'
 
 tracker = cv.legacy.TrackerKCF_create()
 
-start_second = 18
-restart_second = 18
+start_second = 86
+restart_second = 86
 
 ix, iy = 0, 0
 xf, yf = 0, 0
@@ -77,7 +77,7 @@ while True:
     if ret == False: break
 
     frame = cv.flip(frame, 1)
-    # frame = mejorar_imagen(frame)
+    frame = mejorar_imagen(frame)
 
     if cv.waitKey(1) & 0xFF == ord(' '):
         while True:
@@ -89,8 +89,8 @@ while True:
                 cv.addWeighted(frame, 1, rectangle_mask, 1, 0, temp_frame)
 
             if selection == True and init_tracking == False:
-                start_frame = get_frame_number(cap, restart_second)
                 init_tracking = True
+                start_frame = get_frame_number(cap, restart_second)
                 cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
                 bbox = np.array([ix, iy, xf - ix, yf - iy])
                 tracker.init(frame,bbox)
