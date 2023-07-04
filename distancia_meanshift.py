@@ -3,7 +3,7 @@ import numpy as np
 import math
 import  matplotlib.pyplot as plt
 
-path = '/home/nicolas/Github/Algoritmos_vision/video3.mp4'
+path = '/home/nicolas/Github/videos/video9.MOV'
 # path = 0
 
 start_second = 80

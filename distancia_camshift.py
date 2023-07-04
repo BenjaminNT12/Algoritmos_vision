@@ -130,7 +130,7 @@ while True:
         # cv.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 1)
         pts = cv.boxPoints(ret)
         pts = np.int0(pts)
-        cv.polylines(frame, [pts], True, (255, 0, 0), 1)
+        cv.polylines(frame, [pts], True, (0, 255, 0), 1)
     
     cv.imshow('frame', frame)
     

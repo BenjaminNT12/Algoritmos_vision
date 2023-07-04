@@ -1,6 +1,7 @@
 import  cv2
 import numpy as np  
 
+# path = '/home/nicolas/Github/videos/video9.MOV'
 cap = cv2.VideoCapture(0)
 # get first video frame
 ok, frame = cap.read()
