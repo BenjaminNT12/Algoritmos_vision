@@ -7,7 +7,7 @@ import math
 path = 0
 
 name = False
-count = [0]
+count = 0
 set_rotation = 0.0
 
 coordenadas = []
@@ -28,7 +28,7 @@ upper_color = np.array([h_max, s_max, v_max])
 
 hsv_range_complete = False
 
-area_threshold = 20
+area_threshold = 50
 
 cap = cv.VideoCapture(path)
 
@@ -60,6 +60,30 @@ def split_hsv_channels(frame):
     h, s, v = cv.split(hsv_frame)
     return h, s, v
 
+# funcion para calcular la pose de un objeto con el metodo solvePNP()
+def calc_pose(puntos2D, puntos3D, matriz_camara, coeficientes_distorsion):
+    # puntos2D: una lista de puntos 2D en la imagen que corresponden a los puntos 3D en el mundo real.
+    # puntos3D: una lista de puntos 3D en el mundo real que corresponden a los puntos 2D en la imagen.
+    # matriz_camara: la matriz de la cámara, que representa los parámetros intrínsecos de la cámara.
+    # coeficientes_distorsion: los coeficientes de distorsión de la cámara.
+    
+    puntos2D = np.array(puntos2D, dtype=np.float32)
+    puntos3D = np.array(puntos3D, dtype=np.float32)
+    matriz_camara = np.array(matriz_camara, dtype=np.float32)
+    coeficientes_distorsion = np.array(coeficientes_distorsion, dtype=np.float32)
+
+    # Calcular la pose utilizando solvePNP()
+    _, rvec, tvec = cv.solvePnP(puntos3D, puntos2D, matriz_camara, coeficientes_distorsion)
+
+    # Convertir el vector de rotación a una matriz de rotación
+    matriz_rotacion, _ = cv.Rodrigues(rvec)
+
+    # Devolver la matriz de rotación y el vector de traslación
+    return matriz_rotacion, tvec
+    
+    
+    
+
 def dentro_de_area(coordenadas, punto_referencia, radio):
 
     # Calcula la distancia euclidiana entre cada coordenada y el punto de referencia
@@ -74,6 +98,8 @@ def dentro_de_area(coordenadas, punto_referencia, radio):
     return posiciones_dentro_area
 
 def calcular_pose(puntos):
+    global set_rotation
+    
     # Verificar que haya exactamente 5 puntos
     if puntos.shape != (5, 2):
         raise ValueError("Se requiere una matriz de 5 filas y 2 columnas para calcular la pose.")
@@ -86,55 +112,72 @@ def calcular_pose(puntos):
     centro_x = np.mean(x)
     centro_y = np.mean(y)
 
-    # Calcular las coordenadas relativas a partir del centro de masa
-    x_rel = x - centro_x
-    y_rel = y - centro_y
-
-    # Construir la matriz de covarianza
-    matriz_cov = np.cov(np.array([x_rel, y_rel]))
-
-    # Calcular los vectores y valores propios de la matriz de covarianza
-    valores_propios, vectores_propios = np.linalg.eig(matriz_cov)
-
-    # Encontrar el índice del valor propio más pequeño
-    indice_menor_valor = np.argmin(valores_propios)
-
-    # Obtener el vector propio correspondiente al menor valor propio
-    vector_menor_valor = vectores_propios[:, indice_menor_valor]
-
-    # Calcular la orientación relativa de la pose en grados
-    orientacion_rad = np.arctan2(vector_menor_valor[1], vector_menor_valor[0])
-    orientacion_deg = np.degrees(orientacion_rad)
-
     # Calcular la posición relativa de la pose
     posicion = np.array([centro_x, centro_y])
+
+    x_pos = new_cordinates[4][1] - posicion[1]
+    y_pos = new_cordinates[4][0] - posicion[0]
+
+    orientacion_deg = math.atan2(y_pos, x_pos) * (180.0 / math.pi)
+    if set_rotation == 0.0:
+        set_rotation = orientacion_deg
+    orientacion_deg = orientacion_deg - set_rotation
 
     return posicion, orientacion_deg
 
 # crea una funcion que grafique una linea sobre un frame de opencv, y que argumento le de un angulo y lo grafique?
 def draw_line(img, start_point, end_point, color = (0,0,255), thickness = 1):
-  # Convert the angle to radians.
-#   angle = angle * math.pi / 180
 
-  # Calculate the start and end points of the line.
   start_x = start_point[0] 
   start_y = start_point[1] 
   end_x = end_point[0]
   end_y = end_point[1]
-#   end_x = start_x + math.cos(angle) * img.shape[1]
-#   end_y = start_y + math.sin(angle) * img.shape[0]
 
   # Draw the line.
   cv.line(img, (int(start_x), int(start_y)), (int(end_x), int(end_y)), color, thickness)
 
+# Funcion para calcular la distancia entre dos puntos dados?
+def distance(p1, p2):
+    """
+    Calcula la distancia entre dos puntos dados.
 
+    Parámetros:
+        x1: La coordenada x del primer punto.
+        y1: La coordenada y del primer punto.
+        x2: La coordenada x del segundo punto.
+        y2: La coordenada y del segundo punto.
+
+    Devuelve:
+        La distancia entre los dos puntos.
+    """
+
+    x1, y1 = p1
+    x2, y2 = p2
+
+    dx = x2 - x1
+    dy = y2 - y1
+    return math.sqrt(dx**2 + dy**2)
+
+# Calcula la distancia entre dos puntos dados
+def calculate_distance(cordinates):
+    d1 = distance(cordinates[0][:], cordinates[1][:])
+    d2 = distance(cordinates[1][:], cordinates[4][:])
+    d3 = distance(cordinates[0][:], cordinates[3][:])
+    d4 = distance(cordinates[3][:], cordinates[4][:])
+    
+    d1cm = 85.638 - 0.152*d1 # polinomio de ajuste d1
+    d2cm = 86.952 - 0.163*d2 # polinomio de ajuste d2
+    d3cm = 89.312 - 0.166*d3 # polinomio de ajuste d3
+    d4cm = 88.928 - 0.172*d4 # polinomio de ajuste d4
+    
+    return d1cm, d2cm, d3cm, d4cm
 
 def color_tracking(frame, lower_color, upper_color):
-    global name, coordenadas, new_cordinates, set_rotation
+    global name, coordenadas, new_cordinates, set_rotation, count
+    
     position = 0
     translacion = 0
 
-    
     hsv_frame = cv.cvtColor(frame, cv.COLOR_RGB2HSV)
     color_mask = cv.inRange(hsv_frame, lower_color, upper_color)
 
@@ -162,26 +205,34 @@ def color_tracking(frame, lower_color, upper_color):
             else:
                 actual_coordinates = np.array([centroid_x, centroid_y])
                 position = dentro_de_area(new_cordinates, actual_coordinates, 50)
-                
                 np.put(new_cordinates, [len(actual_coordinates)*position, len(actual_coordinates)*position+1], actual_coordinates)
-                translacion, rotacion = calcular_pose(new_cordinates)
-
-                cv.putText(frame, str(translacion), (20, 50), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
                 
-                cv.circle(frame, (int(translacion[0]), int(translacion[1])), 5, (0, 0, 255), -1)
-                draw_line(frame, translacion, new_cordinates[4][:])
-                x = new_cordinates[4][1] - translacion[1]
-                y = new_cordinates[4][0] - translacion[0]
+                translacion, angle = calcular_pose(new_cordinates)
 
-                angle = math.atan2(y, x) * (180.0 / math.pi)
-                if set_rotation == 0.0:
-                    set_rotation = angle
-                    print("set_rotation", set_rotation)
-                angle = angle - set_rotation
-                # print('Ángulo en grados: ' + str(angle))
-                cv.putText(frame, str(angle), (20, 20), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+                cv.circle(frame, (int(translacion[0]), int(translacion[1])), 5, (0, 0, 0), -1)
+
+                draw_line(frame, new_cordinates[0][:], new_cordinates[1][:], thickness=3)
+                draw_line(frame, new_cordinates[1][:], new_cordinates[4][:], thickness=3)
+                draw_line(frame, new_cordinates[0][:], new_cordinates[3][:], thickness=3)
+                draw_line(frame, new_cordinates[3][:], new_cordinates[4][:], thickness=3)
                 
-            cv.putText(frame, str(position), (centroid_x - 25, centroid_y - 25), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                d1cm, d2cm, d3cm, d4cm = calculate_distance(new_cordinates)
+
+                cv.putText(frame, "Angulo: " + str(int(angle)) + " Grados", (20, 20), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                
+                cv.putText(frame, "Distancias: "
+                           +str(int(d1cm)) +"cm ,"
+                           +str(int(d2cm)) +"cm ,"
+                           +str(int(d3cm)) +"cm ,"
+                           +str(int(d4cm)) +"cm ", 
+                           (20, 40), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                
+                # if cv.waitKey(1) & 0xFF == ord('r'):
+                #     print("Distancias: ", round(d1,2), round(d2,2), round(d3,2), round(d4,2), "iteracion", count)
+                #     count += 1 
+                #     break
+                
+            cv.putText(frame, str(position), (centroid_x - 25, centroid_y - 25), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 2)
             cv.circle(frame, (centroid_x, centroid_y), 12, (0, 255, 0), -1)
             
     name = True
@@ -254,6 +305,329 @@ while True:
 cap.release()
 out.release()
 cv.destroyAllWindows()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
