@@ -125,6 +125,7 @@ def draw_line(img, start_point, end_point, color=(0, 0, 255), thickness=1):
 # Funcion para calcular la distancia entre dos puntos dados?
 
 
+
 def distance(point_1, point_2):
     """
     Calcula la distancia entre dos puntos dados.
@@ -359,4 +360,3 @@ while True:
 cap.release()
 out.release()
 cv.destroyAllWindows()
-
