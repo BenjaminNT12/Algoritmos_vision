@@ -6,7 +6,7 @@ import cv2 as cv
 # lower_color [135   2 254] upper_color [158   4 255]
 PATH = 0
 
-NAME = False
+PTS_COMPLETE = False
 COUNT = 0
 SET_ROTATION = 0.0
 
@@ -39,35 +39,35 @@ mask = np.zeros((int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
 # Función para el evento del mouse
 
 
-def draw_rectangle(event, x_coord, y_coord, flags, param):
-    """_summary_
+# def draw_rectangle(event, x_coord, y_coord, flags, param):
+#     """_summary_
 
-    Args:
-        event (_type_): _description_
-        x (_type_): _description_
-        y (_type_): _description_
-        flags (_type_): _description_
-        param (_type_): _description_
+#     Args:
+#         event (_type_): _description_
+#         x (_type_): _description_
+#         y (_type_): _description_
+#         flags (_type_): _description_
+#         param (_type_): _description_
 
-    Raises:
-        ValueError: _description_
+#     Raises:
+#         ValueError: _description_
 
-    Returns:
-        _type_: _description_
-    """
-    global ix, iy, xf, yf, RECTANGLE_COMPLETE, DOWN
+#     Returns:
+#         _type_: _description_
+#     """
+#     global ix, iy, xf, yf, RECTANGLE_COMPLETE, DOWN
 
-    if event == cv.EVENT_LBUTTONDOWN:
-        ix, iy = x_coord, y_coord
-        DOWN = True
-    elif event == cv.EVENT_MOUSEMOVE and DOWN is True:
-        if DOWN is True:
-            rectangle_mask[:] = 0
-            cv.rectangle(rectangle_mask, (ix, iy), (x_coord, y_coord), (0, 0, 255), 1)
-            xf, yf = x_coord, y_coord
-    elif event == cv.EVENT_LBUTTONUP:
-        DOWN = False
-        RECTANGLE_COMPLETE = True
+#     if event == cv.EVENT_LBUTTONDOWN:
+#         ix, iy = x_coord, y_coord
+#         DOWN = True
+#     elif event == cv.EVENT_MOUSEMOVE and DOWN is True:
+#         if DOWN is True:
+#             rectangle_mask[:] = 0
+#             cv.rectangle(rectangle_mask, (ix, iy), (x_coord, y_coord), (0, 0, 255), 1)
+#             xf, yf = x_coord, y_coord
+#     elif event == cv.EVENT_LBUTTONUP:
+#         DOWN = False
+#         RECTANGLE_COMPLETE = True
 
 
 def rgb_to_hsv(frame_to_convert):
@@ -113,7 +113,7 @@ def dentro_de_area(coord, punto_referencia, radio):
     distancias = np.linalg.norm(coord - punto_referencia, axis=1)
 
     # Verifica si la distancia es menor que el radio
-    coordenadas_dentro_area = coord[distancias < radio]
+    # coordenadas_dentro_area = coord[distancias < radio]
 
     # Obtiene la posición de las coordenadas dentro del arreglo
     posiciones_dentro_area = np.where(distancias < radio)[0]
@@ -141,12 +141,12 @@ def calcular_pose(puntos):
             "Se requiere una matriz de 5 filas y 2 columnas para calcular la pose.")
 
     # Extraer las coordenadas x e y de los puntos
-    x = puntos[:, 0]
-    y = puntos[:, 1]
+    x_pts = puntos[:, 0]
+    y_pts = puntos[:, 1]
 
     # Calcular el centro de masa de los puntos
-    centro_x = np.mean(x)
-    centro_y = np.mean(y)
+    centro_x = np.mean(x_pts)
+    centro_y = np.mean(y_pts)
 
     # Calcular la posición relativa de la pose
     posicion = np.array([centro_x, centro_y])
@@ -231,14 +231,24 @@ def calculate_distance(cordinates):
     return d1cm, d2cm, d3cm, d4cm
 
 
-def color_tracking(frame, lower_color, upper_color):
-    global NAME, coordenadas, new_cordinates, SET_ROTATION, COUNT
+def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
+    """_summary_
+
+    Args:
+        frame (_type_): _description_
+        lower_color (_type_): _description_
+        upper_color (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    global PTS_COMPLETE, coordenadas, new_cordinates
 
     position = 0
     translacion = 0
 
-    hsv_frame = cv.cvtColor(frame, cv.COLOR_RGB2HSV)
-    color_mask = cv.inRange(hsv_frame, lower_color, upper_color)
+    hsv_frame = cv.cvtColor(frame_to_track, cv.COLOR_RGB2HSV)
+    color_mask = cv.inRange(hsv_frame, lower_color_to_track, upper_color_to_track)
 
     color_mask = cv.erode(color_mask, None, iterations=2)
     color_mask = cv.dilate(color_mask, None, iterations=2)
@@ -253,13 +263,13 @@ def color_tracking(frame, lower_color, upper_color):
         area = cv.contourArea(contour)
 
         # Descartar contornos pequeños
-        if area >AREA_THRESHOLD:
+        if area > AREA_THRESHOLD:
             # Calcular el centroide del contorno
-            M = cv.moments(contour)
-            centroid_x = int(M["m10"] / M["m00"])
-            centroid_y = int(M["m01"] / M["m00"])
+            moment = cv.moments(contour)
+            centroid_x = int(moment["m10"] / moment["m00"])
+            centroid_y = int(moment["m01"] / moment["m00"])
 
-            if NAME == False:
+            if PTS_COMPLETE is False:
                 coordenadas.append([centroid_x, centroid_y])
                 new_cordinates = np.array(coordenadas)
             else:
@@ -304,37 +314,67 @@ def color_tracking(frame, lower_color, upper_color):
                        cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 2)
             cv.circle(frame, (centroid_x, centroid_y), 12, (0, 255, 0), -1)
 
-    NAME = True
+    PTS_COMPLETE = True
     return color_mask
 
 
 def get_frame_number(video, second):
+    """_summary_
+
+    Args:
+        video (_type_): _description_
+        second (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     fps = video.get(cv.CAP_PROP_FPS)
     frame_number = int(fps * second)
     return frame_number
 
 
-def get_hsv_range(frame, x_min, y_min, x_max, y_max):
-    global lower_color, upper_color
+def get_hsv_range(frame_rgb, x_min, y_min, x_max, y_max):
+    """_summary_
 
-    hsv_frame = cv.cvtColor(frame, cv.COLOR_RGB2HSV)
+    Args:
+        frame (_type_): _description_
+        x_min (_type_): _description_
+        y_min (_type_): _description_
+        x_max (_type_): _description_
+        y_max (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+
+    # global lower_color, upper_color
+
+    hsv_frame = cv.cvtColor(frame_rgb, cv.COLOR_RGB2HSV)
     roi = hsv_frame[y_min:y_max, x_min:x_max, :]
 
-    h_min = np.min(roi[:, :, 0])
-    h_max = np.max(roi[:, :, 0])
-    s_min = np.min(roi[:, :, 1])
-    s_max = np.max(roi[:, :, 1])
-    v_min = np.min(roi[:, :, 2])
-    v_max = np.max(roi[:, :, 2])
+    h_channel_min = np.min(roi[:, :, 0])
+    h_channel_max = np.max(roi[:, :, 0])
+    s_channel_min = np.min(roi[:, :, 1])
+    s_channel_max = np.max(roi[:, :, 1])
+    v_channel_min = np.min(roi[:, :, 2])
+    v_channel_max = np.max(roi[:, :, 2])
 
-    lower_color = np.array([h_min, s_min, v_min])
-    upper_color = np.array([h_max, s_max, v_max])
+    low_color = np.array([h_channel_min, s_channel_min, v_channel_min])
+    up_color = np.array([h_channel_max, s_channel_max, v_channel_max])
 
-    return lower_color, upper_color
+    return low_color, up_color
 
 
-def mejorar_imagen(frame):
-    lab = cv.cvtColor(frame, cv.COLOR_BGR2LAB)
+def enhance_image(frame_to_enhance):
+    """_summary_
+
+    Args:
+        frame (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    lab = cv.cvtColor(frame_to_enhance, cv.COLOR_BGR2LAB)
 
     l_channel, a_channel, b_channel = cv.split(lab)
 
@@ -366,7 +406,7 @@ while True:
         break
 
     frame = cv.flip(frame, 1)
-    # frame = mejorar_imagen(frame)
+    # frame = enhance_image(frame)
 
     if HSV_RANGE_COMPLETE or cv.waitKey(1) & 0xFF == ord('a'):
         HSV_RANGE_COMPLETE = True
