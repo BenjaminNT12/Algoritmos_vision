@@ -32,9 +32,51 @@ AREA_THRESHOLD = 50
 
 cap = cv.VideoCapture(PATH)
 
+
 rectangle_mask = np.zeros(
     (int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
 mask = np.zeros((int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
+
+print("x: ", int(cap.get(3)), "y: ", int(cap.get(4)))
+
+ancho_imagen = int(cap.get(3))
+alto_imagen = int(cap.get(4))
+
+# K1 = 0.11480806073904032
+# K2 = -0.21946985653851792
+# P1 = 0.0012002116999769957
+# P2 = 0.008564577708855225
+# K3 = 0.11274677130853494
+
+FX, FY = ancho_imagen, alto_imagen
+CX, CY = int(ancho_imagen/2), int(alto_imagen/2)
+
+cameraMatrix = np.array(
+    [[FX, 0, CX],
+     [0, FY, CY],
+     [0,  0, 1]], dtype=np.float32)
+
+# distCoeffs = np.array([K1, K2, K1, P2, K3], dtype=np.float32)
+distCoeffs = np.zeros((4,1)) 
+
+objectPoints = np.array(
+    [[0.0, 0.0, 0.0],
+     [-190.0, 0.0, 0.0],
+     [-95.0, -145.0, 0.0],
+     [0.0, -190.0, 0.0],
+     [-190.0, -190.0, 0.0]], dtype=np.float32)
+
+
+
+def estimar_pose_3D(objPoints, imgPoints, camMatrix, distorCoeffs):
+    # Resolver PnP para estimar la pose 3D
+    success, rvec, tvec = cv.solvePnP(objPoints,
+                                      imgPoints,
+                                      camMatrix,
+                                      distorCoeffs,
+                                      flags=cv.SOLVEPNP_ITERATIVE)
+
+    return success, rvec, tvec
 
 
 def dentro_de_area(coord, punto_referencia, radio):
@@ -52,10 +94,6 @@ def dentro_de_area(coord, punto_referencia, radio):
     # Calcula la distancia euclidiana entre cada coordenada y el punto de referencia
     distancias = np.linalg.norm(coord - punto_referencia, axis=1)
 
-    # Verifica si la distancia es menor que el radio
-    # coordenadas_dentro_area = coord[distancias < radio]
-
-    # Obtiene la posición de las coordenadas dentro del arreglo
     posiciones_dentro_area = np.where(distancias < radio)[0]
 
     return posiciones_dentro_area
@@ -125,7 +163,6 @@ def draw_line(img, start_point, end_point, color=(0, 0, 255), thickness=1):
 # Funcion para calcular la distancia entre dos puntos dados?
 
 
-
 def distance(point_1, point_2):
     """
     Calcula la distancia entre dos puntos dados.
@@ -189,7 +226,8 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
     translacion = 0
 
     hsv_frame = cv.cvtColor(frame_to_track, cv.COLOR_RGB2HSV)
-    color_mask = cv.inRange(hsv_frame, lower_color_to_track, upper_color_to_track)
+    color_mask = cv.inRange(
+        hsv_frame, lower_color_to_track, upper_color_to_track)
 
     color_mask = cv.erode(color_mask, None, iterations=2)
     color_mask = cv.dilate(color_mask, None, iterations=2)
@@ -218,7 +256,7 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
                 position = dentro_de_area(
                     new_cordinates, actual_coordinates, 50)
                 np.put(new_cordinates, [len(actual_coordinates)*position,
-                       len(actual_coordinates)*position+1], actual_coordinates)
+                       len(actual_coordinates)*position + 1], actual_coordinates)
 
                 translacion, angle = calcular_pose(new_cordinates)
 
@@ -233,7 +271,31 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
                           new_cordinates[3][:], thickness=3)
                 draw_line(frame, new_cordinates[3][:],
                           new_cordinates[4][:], thickness=3)
+############################################################################################################
 
+                coordenadas_flotantes = np.array(new_cordinates, dtype=np.float32)
+                
+                if(len(new_cordinates) > 4):
+                    _, rotacion3d, translacion3D = estimar_pose_3D(objectPoints,
+                                                                coordenadas_flotantes,
+                                                                cameraMatrix,
+                                                                distCoeffs)
+
+                    nose_end_point2D, jacobian = cv.projectPoints(
+                        np.array([(0.0, 0.0, 1000.0)]), 
+                        rotacion3d, 
+                        translacion3D,
+                        cameraMatrix,
+                        distCoeffs)
+
+                    point1 = (int(new_cordinates[0][0]),
+                            int(new_cordinates[0][1]))
+
+                    point2 = (int(nose_end_point2D[0][0][0]), 
+                            int(nose_end_point2D[0][0][1]))
+
+                    cv.line(frame_to_track, point1, point2, (0, 0, 0), 2)
+############################################################################################################
                 d1cm, d2cm, d3cm, d4cm = calculate_distance(new_cordinates)
 
                 cv.putText(frame, "Angulo: " + str(int(angle)) + " Grados",
@@ -245,11 +307,6 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
                            + str(int(d3cm)) + "cm ,"
                            + str(int(d4cm)) + "cm ",
                            (20, 40), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
-
-                # if cv.waitKey(1) & 0xFF == ord('r'):
-                #     print("Distancias: ", round(d1,2), round(d2,2), round(d3,2), round(d4,2), "iteracion", COUNT)
-                #     COUNT += 1
-                #     break
 
             cv.putText(frame, str(position), (centroid_x - 25, centroid_y - 25),
                        cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 2)
