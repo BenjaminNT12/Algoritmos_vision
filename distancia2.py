@@ -37,16 +37,14 @@ rectangle_mask = np.zeros(
     (int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
 mask = np.zeros((int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
 
-print("x: ", int(cap.get(3)), "y: ", int(cap.get(4)))
-
 ancho_imagen = int(cap.get(3))
 alto_imagen = int(cap.get(4))
 
-# K1 = 0.11480806073904032
-# K2 = -0.21946985653851792
-# P1 = 0.0012002116999769957
-# P2 = 0.008564577708855225
-# K3 = 0.11274677130853494
+K1 = 0.11480806073904032
+K2 = -0.21946985653851792
+P1 = 0.0012002116999769957
+P2 = 0.008564577708855225
+K3 = 0.11274677130853494
 
 FX, FY = ancho_imagen, alto_imagen
 CX, CY = int(ancho_imagen/2), int(alto_imagen/2)
@@ -56,16 +54,29 @@ cameraMatrix = np.array(
      [0, FY, CY],
      [0,  0, 1]], dtype=np.float32)
 
-# distCoeffs = np.array([K1, K2, K1, P2, K3], dtype=np.float32)
-distCoeffs = np.zeros((4,1)) 
+distCoeffs = np.array([K1, K2, K1, P2, K3], dtype=np.float32)
+# distCoeffs = np.zeros((4,1))
 
 objectPoints = np.array(
-    [[0.0, 0.0, 0.0],
-     [-190.0, 0.0, 0.0],
-     [-95.0, -145.0, 0.0],
-     [0.0, -190.0, 0.0],
-     [-190.0, -190.0, 0.0]], dtype=np.float32)
+    [[190.0, 190.0, 0.0],
+     [0.0, 190.0, 0.0],
+     [95.0, 45.0, 0.0],
+     [190.0, 0.0, 0.0],
+     [0.0, 0.0, 0.0]], dtype=np.float32)
 
+
+def plot_points(frame_to_draw, points):
+    """Funcion para plotear los puntos en la imagen
+
+    Args:
+        points (np.array): coordenadas de los puntos en 3 dimensiones
+    """
+
+    for i in range(len(points)):
+        cv.circle(frame_to_draw, (int(points[i][0]), int(
+            points[i][1])), 5, (0, 0, 0), -1)
+        cv.putText(frame, str(i), (int(points[i][0]), int(
+            points[i][1])), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 2)
 
 
 def estimar_pose_3D(objPoints, imgPoints, camMatrix, distorCoeffs):
@@ -260,57 +271,69 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
 
                 translacion, angle = calcular_pose(new_cordinates)
 
-                cv.circle(frame, (int(translacion[0]), int(
+                cv.circle(frame_to_track, (int(translacion[0]), int(
                     translacion[1])), 5, (0, 0, 0), -1)
 
-                draw_line(frame, new_cordinates[0][:],
+                draw_line(frame_to_track, new_cordinates[0][:],
                           new_cordinates[1][:], thickness=3)
-                draw_line(frame, new_cordinates[1][:],
+                draw_line(frame_to_track, new_cordinates[1][:],
                           new_cordinates[4][:], thickness=3)
-                draw_line(frame, new_cordinates[0][:],
+                draw_line(frame_to_track, new_cordinates[0][:],
                           new_cordinates[3][:], thickness=3)
-                draw_line(frame, new_cordinates[3][:],
+                draw_line(frame_to_track, new_cordinates[3][:],
                           new_cordinates[4][:], thickness=3)
 ############################################################################################################
+                plot_points(frame_to_track, objectPoints)
+                coordenadas_float = np.array(new_cordinates, dtype=np.float32)
 
-                coordenadas_flotantes = np.array(new_cordinates, dtype=np.float32)
-                
-                if(len(new_cordinates) > 4):
+                if (len(new_cordinates) > 4):
                     _, rotacion3d, translacion3D = estimar_pose_3D(objectPoints,
-                                                                coordenadas_flotantes,
-                                                                cameraMatrix,
-                                                                distCoeffs)
+                                                                   coordenadas_float,
+                                                                   cameraMatrix,
+                                                                   distCoeffs)
+                    print("translacion: ", translacion3D)
+                    cv.putText(frame_to_track,
+                               "Rotacion X: " + str(int(math.degrees(rotacion3d[0]))),
+                               (20, 60), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                    cv.putText(frame_to_track,
+                               "Rotacion Y: " + str(int(math.degrees(rotacion3d[1]))),
+                               (20, 80), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                    cv.putText(frame_to_track, 
+                               "Rotacion Z: " + str(int(math.degrees(rotacion3d[2]))),
+                               (20, 100), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
 
+                    
                     nose_end_point2D, jacobian = cv.projectPoints(
-                        np.array([(0.0, 0.0, 1000.0)]), 
-                        rotacion3d, 
+                        np.array([(0.0, 0.0, 1000.0)]),
+                        rotacion3d,
                         translacion3D,
                         cameraMatrix,
                         distCoeffs)
 
                     point1 = (int(new_cordinates[0][0]),
-                            int(new_cordinates[0][1]))
+                              int(new_cordinates[0][1]))
 
-                    point2 = (int(nose_end_point2D[0][0][0]), 
-                            int(nose_end_point2D[0][0][1]))
-
-                    cv.line(frame_to_track, point1, point2, (0, 0, 0), 2)
+                    point2 = (int(nose_end_point2D[0][0][0]),
+                              int(nose_end_point2D[0][0][1]))
+                    # print(nose_end_point2D)
+                    # cv.line(frame_to_track, point1, point2, (0, 0, 0), 2)
 ############################################################################################################
                 d1cm, d2cm, d3cm, d4cm = calculate_distance(new_cordinates)
 
-                cv.putText(frame, "Angulo: " + str(int(angle)) + " Grados",
+                cv.putText(frame_to_track, "Angulo: " + str(int(angle)) + " Grados",
                            (20, 20), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
 
-                cv.putText(frame, "Distancias: "
+                cv.putText(frame_to_track, "Distancias: "
                            + str(int(d1cm)) + "cm ,"
                            + str(int(d2cm)) + "cm ,"
                            + str(int(d3cm)) + "cm ,"
                            + str(int(d4cm)) + "cm ",
                            (20, 40), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
 
-            cv.putText(frame, str(position), (centroid_x - 25, centroid_y - 25),
+            cv.putText(frame_to_track, str(position), (centroid_x - 25, centroid_y - 25),
                        cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 2)
-            cv.circle(frame, (centroid_x, centroid_y), 12, (0, 255, 0), -1)
+            cv.circle(frame_to_track, (centroid_x, centroid_y),
+                      12, (0, 255, 0), -1)
 
     PTS_COMPLETE = True
     return color_mask
