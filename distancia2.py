@@ -283,7 +283,7 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
                 draw_line(frame_to_track, new_cordinates[3][:],
                           new_cordinates[4][:], thickness=3)
 ############################################################################################################
-                plot_points(frame_to_track, objectPoints)
+                # plot_points(frame_to_track, objectPoints)
                 coordenadas_float = np.array(new_cordinates, dtype=np.float32)
 
                 if (len(new_cordinates) > 4):
