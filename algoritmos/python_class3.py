@@ -49,3 +49,48 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
+    
+# import math
+
+# class Solution:
+#     def findPerm(self, A, B):
+#         if not (1 <= A <= 10**5):
+#             raise ValueError("A is not valid")
+#         if not (1 <= B <= min(10**18, math.factorial(A))):
+#             raise ValueError("B is not valid")
+
+#         permutation = list(range(1, A + 1))
+#         for _ in range(B - 1):
+#             next_permutation(permutation)
+
+#         return permutation
+
+# def next_permutation(arr):
+#     i = len(arr) - 2
+#     while i >= 0 and arr[i] >= arr[i + 1]:
+#         i -= 1
+
+#     if i >= 0:
+#         j = len(arr) - 1
+#         while arr[j] <= arr[i]:
+#             j -= 1
+#         arr[i], arr[j] = arr[j], arr[i]
+
+#     reverse(arr, i + 1, len(arr) - 1)
+
+# def reverse(arr, start, end):
+#     while start < end:
+#         arr[start], arr[end] = arr[end], arr[start]
+#         start += 1
+#         end -= 1
+
+# def main():
+#     A = 10
+#     B = 28
+    
+#     s = Solution()
+#     print(s.findPerm(A, B))
+
+# if __name__ == "__main__":
+#     main()
