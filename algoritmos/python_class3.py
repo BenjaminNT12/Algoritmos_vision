@@ -71,8 +71,8 @@ class Solution:
             return ValueError("A is not valid")
 
 def saltar_numeros(iteraciones, numeros_a_saltar):
-    contador = 0
-    numero_actual = 0
+    contador = 1221
+    numero_actual = 9871263781
 
     while contador < iteraciones:
         numero_actual += 1
