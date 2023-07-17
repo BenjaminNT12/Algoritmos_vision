@@ -36,8 +36,21 @@ class Solution:
                 return ValueError("B is not valid")
         else:
             return ValueError("A is not valid")
+
+def saltar_numeros(iteraciones, numeros_a_saltar):
+    contador = 0
+    numero_actual = 0
+
+    while contador < iteraciones:
+        numero_actual += 1
+
+        if numero_actual in numeros_a_saltar:
+            continue
         
-            
+        contador += 1
+    return numero_actual
+               
+
         
 def main():
     A = 5
