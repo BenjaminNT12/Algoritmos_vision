@@ -1,43 +1,90 @@
-import cv2
 import numpy as np
+import cv2 as cv
 import glob
- 
-# Load previously saved data
-with np.load('B.npz') as X:
-  mtx, dist, _, _ = [X[i] for i in ('mtx','dist','rvecs','tvecs')]
-  
-def draw(img, corners, imgpts):
- corner = tuple(corners[0].ravel())
- img = cv2.line(img, corner, tuple(imgpts[0].ravel()), (255,0,0), 5)
- img = cv2.line(img, corner, tuple(imgpts[1].ravel()), (0,255,0), 5)
- img = cv2.line(img, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
- return img
+import os
 
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-objp = np.zeros((6*7,3), np.float32)
-objp[:,:2] = np.mgrid[0:7,0:6].T.reshape(-1,2)
- 
-axis = np.float32([[3,0,0], [0,3,0], [0,0,-3]]).reshape(-1,3)
+path = "/home/nicolas/Github/Algoritmos_vision/fotosCalibracion4"
+# termination criterio
+criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-for fname in glob.glob('left*.jpg'):
-  img = cv2.imread(fname)
-  gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-  ret, corners = cv2.findChessboardCorners(gray, (7,6),None)
- 
-  if ret == True:
- 
-    corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
- 
-    # Find the rotation and translation vectors.
-    ret,rvecs, tvecs, inliers = cv2.solvePnP(objp, corners2, mtx, dist)
- 
-    # project 3D points to image plane
-    imgpts, jac = cv2.projectPoints(axis, rvecs, tvecs, mtx, dist)
- 
-    img = draw(img,corners2,imgpts)
-    cv2.imshow('img',img)
-    k = cv2.waitKey(0) &amp; 0xFF
-    if k == ord('s'):
-      cv2.imwrite(fname[:6]+'.png', img)
- 
-cv2.destroyAllWindows()
+# preparar puntos de objeto, como (0,0,0,0), (1,0,0,0), (2,0,0,0)...., (6,5,0)
+objp = np.zeros((4*4, 3), np.float32)
+objp[:, :2] = np.mgrid[0:4, 0:4].T.reshape(-1, 2)
+
+# Arrays para almacenar puntos de objeto y puntos de imagen de todas las imágenes.
+objpoints = []  # 3d point in real world space
+imgpoints = []  # 2d points in image plane.
+
+images = glob.glob(os.path.join(path, '*.jpg'))
+
+def enhanced_contrast(frame):
+    # Convertir a escala de grises
+    frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    # Aumentar el contraste
+    claheFilter = cv.createCLAHE(clipLimit=2, tileGridSize=(8, 8))
+    frame = claheFilter.apply(frame)
+    # frame = cv.equalizeHist(frame)
+    return frame
+
+# cap = cv.VideoCapture(2)
+
+# while True:
+#     _, img = cap.read()
+
+
+count = 0
+count2 = 0
+
+for fname in images:
+    img = cv.imread(fname)
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    # gray = enhanced_contrast(img)
+    # cv.imshow('gray', gray)
+    # cv.imshow('gray_enhanced', gray)
+    # cv.waitKey(10)
+    ret, corners = cv.findChessboardCorners(gray, (4, 4), None)
+    # Si se encuentran, añada puntos de objeto, puntos de imagen (después de refinarlos)fname
+    print(ret)
+    if count == 10:
+        break
+    if ret == True:
+        count += 1
+        print(count)
+        objpoints.append(objp)
+        
+        corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
+        imgpoints.append(corners2)
+
+        # Dibuja y muestra las esquinas
+        img = cv.drawChessboardCorners(img, (4, 4), corners2, ret)
+        # cv.imshow('img', img)
+        # cv.waitKey(10)
+
+cv.destroyAllWindows() 
+
+
+ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+# print("ret: ", ret, "mtx :", mtx, "dist", dist, "rvecs: ", rvecs, "tvecs: ", tvecs)
+
+
+img = cv.imread(os.path.join(path,'calibracion27.jpg'))
+h, w = img.shape[:2]
+newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w,h))
+
+# undistort
+dst = cv.undistort(img, mtx, dist, None, newcameramtx)
+# crop the image
+x, y, w, h = roi
+dst = dst[y:y+h, x:x+w]
+cv.imwrite('calibresult.png', dst)
+cv.imshow('calibresult 1', dst)
+
+# undistort
+mapx, mapy = cv.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (w,h), 5)
+dst = cv.remap(img, mapx, mapy, cv.INTER_LINEAR)
+# crop the image
+x, y, w, h = roi
+dst = dst[y:y+h, x:x+w]
+cv.imshow('calibresult 2', dst)
+# cv.imwrite('calibresult.png', dst)
+cv.waitKey(0)
