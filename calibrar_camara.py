@@ -17,6 +17,7 @@ imgpoints = []  # 2d points in image plane.
 
 images = glob.glob(os.path.join(path, '*.jpg'))
 
+
 def enhanced_contrast(frame):
     # Convertir a escala de grises
     frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
@@ -45,31 +46,32 @@ for fname in images:
     ret, corners = cv.findChessboardCorners(gray, (4, 4), None)
     # Si se encuentran, añada puntos de objeto, puntos de imagen (después de refinarlos)fname
     print(ret)
-    if count == 10:
+    if count == 14:
         break
     if ret == True:
         count += 1
         print(count)
         objpoints.append(objp)
-        
+
         corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
         imgpoints.append(corners2)
 
         # Dibuja y muestra las esquinas
         img = cv.drawChessboardCorners(img, (4, 4), corners2, ret)
-        # cv.imshow('img', img)
-        # cv.waitKey(10)
+        cv.imshow('img', img)
+        cv.waitKey(1)
 
-cv.destroyAllWindows() 
+cv.destroyAllWindows()
 
 
-ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(
+    objpoints, imgpoints, gray.shape[::-1], None, None)
 # print("ret: ", ret, "mtx :", mtx, "dist", dist, "rvecs: ", rvecs, "tvecs: ", tvecs)
 
 
-img = cv.imread(os.path.join(path,'calibracion27.jpg'))
+img = cv.imread(os.path.join(path, 'calibracion180.jpg'))
 h, w = img.shape[:2]
-newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w,h))
+newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
 
 # undistort
 dst = cv.undistort(img, mtx, dist, None, newcameramtx)
@@ -80,7 +82,8 @@ cv.imwrite('calibresult.png', dst)
 cv.imshow('calibresult 1', dst)
 
 # undistort
-mapx, mapy = cv.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (w,h), 5)
+mapx, mapy = cv.initUndistortRectifyMap(
+    mtx, dist, None, newcameramtx, (w, h), 5)
 dst = cv.remap(img, mapx, mapy, cv.INTER_LINEAR)
 # crop the image
 x, y, w, h = roi
@@ -88,3 +91,12 @@ dst = dst[y:y+h, x:x+w]
 cv.imshow('calibresult 2', dst)
 # cv.imwrite('calibresult.png', dst)
 cv.waitKey(0)
+
+mean_error = 0
+for i in range(len(objpoints)):
+    imgpoints2, _ = cv.projectPoints(
+        objpoints[i], rvecs[i], tvecs[i], mtx, dist)
+    error = cv.norm(imgpoints[i], imgpoints2, cv.NORM_L2)/len(imgpoints2)
+    mean_error += error
+print("total error: {}".format(mean_error/len(objpoints)))
+ 
