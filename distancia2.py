@@ -3,8 +3,8 @@ import numpy as np
 import cv2 as cv
 
 # PATH = '/home/nicolas/Github/Algoritmos_vision/video3.mp4'
-# lower_color [135   2 254] upper_color [158   4 255]
-PATH = 2
+# lower_color [135   2 254] upper_color [158   4 255]-
+PATH = 0
 
 PTS_COMPLETE = False
 COUNT = 0
