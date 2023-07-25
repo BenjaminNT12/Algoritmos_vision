@@ -75,7 +75,7 @@ def plot_points(frame_to_draw, points):
     for i in range(len(points)):
         cv.circle(frame_to_draw, (int(points[i][0]), int(
             points[i][1])), 5, (0, 0, 0), -1)
-        cv.putText(frame, str(i), (int(points[i][0]), int(
+        cv.putText(frame_to_draw, str(i), (int(points[i][0]), int(
             points[i][1])), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 2)
 
 
@@ -423,6 +423,7 @@ out = cv.VideoWriter("orientacion.avi", fourcc, 30,
 while True:
 
     ret, frame = cap.read()
+    print("type(frame): ", type(frame))
     if ret is False:
         break
 

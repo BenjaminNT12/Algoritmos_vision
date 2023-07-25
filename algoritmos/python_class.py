@@ -13,6 +13,7 @@ def main():
     
     stud1.printname()
     stud2.printname()
+    print("Nombre accesando directamente: ", stud1.name)
     
 if __name__ == "__main__":
     main()
