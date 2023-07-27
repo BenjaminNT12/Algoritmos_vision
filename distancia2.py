@@ -423,7 +423,7 @@ out = cv.VideoWriter("orientacion.avi", fourcc, 30,
 while True:
 
     ret, frame = cap.read()
-    print("type(frame): ", type(frame))
+    # print("type(frame): ", type(frame))
     if ret is False:
         break
 
