@@ -4,7 +4,7 @@ import math
 import  matplotlib.pyplot as plt
 import time 
 
-path = '/home/nicolas/Github/videos/video9.MOV'
+path = '/workspaces/Algoritmos_vision/video11.mp4'
 # path = 0
 
 tracker = cv.legacy.TrackerMOSSE_create()
