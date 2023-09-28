@@ -3,8 +3,8 @@ import numpy as np
 import math
 import  matplotlib.pyplot as plt
 
-path = '/home/nicolas/Github/videos/video9.MOV'
-# path = 0
+# path = '/home/nicolas/Github/videos/video9.MOV'
+path = 0
 
 start_second = 80
 

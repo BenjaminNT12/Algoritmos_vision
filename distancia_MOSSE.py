@@ -4,8 +4,8 @@ import math
 import  matplotlib.pyplot as plt
 import time 
 
-path = '/workspaces/Algoritmos_vision/video11.mp4'
-# path = 0
+# path = '/workspaces/Algoritmos_vision/video11.mp4'
+path = 0
 
 tracker = cv.legacy.TrackerMOSSE_create()
 start_second = 18

@@ -4,8 +4,8 @@ import math
 import  matplotlib.pyplot as plt
 import time
 
-path = '/home/nicolas/Github/videos/video9.MOV'
-# path = 0
+# path = '/home/nicolas/Github/videos/video9.MOV'
+path = 0
 
 start_second = 10
 restart_second = 10
