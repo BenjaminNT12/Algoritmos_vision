@@ -2,9 +2,9 @@ import math
 import numpy as np
 import cv2 as cv
 
-# PATH = '/home/nicolas/Github/Algoritmos_vision/video3.mp4'
+PATH = '/home/nicolas/Github/Algoritmos_vision/video3.mp4'
 # lower_color [135   2 254] upper_color [158   4 255]-
-PATH = 0
+# PATH = 0
 
 PTS_COMPLETE = False
 COUNT = 0
@@ -12,7 +12,7 @@ SET_ROTATION = 0.0
 
 coordenadas = []
 new_cordinates = np.array([])
-START_SECOND = 80
+START_SECOND = 90
 RESTART_SECOND = 80
 
 ix, iy = 0, 0
