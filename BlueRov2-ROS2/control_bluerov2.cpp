@@ -180,64 +180,77 @@ string dato;
 
 //################# Funciones Callback #################
 //Orientación vehiculo real (Roll, Pitch, Yaw)       				%%%%%%%%%%%
+// Función para manejar los mensajes de posición recibidos
 void posCallback(const sensor_msgs::Imu::ConstPtr & msg) 
 {
-	posax=msg->orientation.x; 
-	posay=msg->orientation.y;
-	posaz=msg->orientation.z;
-	posaw=msg->orientation.w;
+    // Extraer los componentes de la orientación del mensaje
+    posax = msg->orientation.x; 
+    posay = msg->orientation.y;
+    posaz = msg->orientation.z;
+    posaw = msg->orientation.w;
 
-	posroll_p=msg->angular_velocity.x;
-	pospitch_p=msg->angular_velocity.y;
-	posyaw_p=msg->angular_velocity.z;
+    // Extraer los componentes de la velocidad angular del mensaje
+    posroll_p = msg->angular_velocity.x;
+    pospitch_p = msg->angular_velocity.y;
+    posyaw_p = msg->angular_velocity.z;
 
+    // Extraer la velocidad angular en el eje x
+    veax = msg->angular_velocity.x;
 
-  	veax=msg->angular_velocity.x;
+    // Crear un cuaternión a partir de los componentes de la orientación
+    tf::Quaternion q(posax, posay, posaz, posaw);
 
-	tf::Quaternion q(posax, posay, posaz, posaw);
-  	tf::Matrix3x3 m(q);
-  	m.getRPY(posrollrad,pospitchrad,posyawrad);
-	posroll=posrollrad*(180/PI);
-	pospitch=-1*(pospitchrad*(180/PI));
+    // Convertir el cuaternión a una matriz de rotación
+    tf::Matrix3x3 m(q);
 
-	//ROS_INFO( "posaw%.3f,", msg->orientation.x);
-	
-	posyaw=(posyawrad*(180/PI));
-   	if (posyaw > 0)
-	{
-      posyaw = posyaw - 360;
-   	};
+    // Obtener los ángulos de rotación (roll, pitch, yaw) de la matriz
+    m.getRPY(posrollrad, pospitchrad, posyawrad);
+
+    // Convertir los ángulos de radianes a grados
+    posroll = posrollrad * (180 / PI);
+    pospitch = -1 * (pospitchrad * (180 / PI));
+
+    // Convertir el ángulo de yaw de radianes a grados
+    posyaw = posyawrad * (180 / PI);
+
+    // Si el ángulo de yaw es positivo, restarle 360
+    if (posyaw > 0)
+    {
+        posyaw = posyaw - 360;
+    };
 }
 
+// Función para manejar los mensajes de odometría recibidos
 void odomCallback(const nav_msgs::Odometry::ConstPtr & msg) 
 {
-    // Extract position information from the Odometry message
+    // Extraer la información de posición del mensaje de Odometría
     posx = msg->pose.pose.position.x;
     posy = msg->pose.pose.position.y;
     posz = msg->pose.pose.position.z;
 
-    // Print the position information to console (optional)
+    // Imprimir la información de posición a la consola (opcional)
     //ROS_INFO("Position: x=%.3f, y=%.3f, z=%.3f", posx, posy, posz);
-	//ROS_INFO_STREAM("Datos: " << posx  << endl);
-
+    //ROS_INFO_STREAM("Datos: " << posx  << endl);
 }
 
-//Presión
-void presCallback(const sensor_msgs::FluidPressure::ConstPtr & msg) {
-    //ROS_INFO( "Press: %.3f,Diff_press:%.3f,", msg->fluid_pressure, msg->variance);
-     fluid_press=msg->fluid_pressure;
-	 diff_press=msg->variance;
-	 
-	 //z_baro = (fluid_press/(Rf*g)*100-7.39);
-	 z_baro=fluid_press-802.6;
-	 
-	 //z filtrada
-	 //a_z= 1/(1*PI*RC);  = 0.1061
-	 a_z=0.1061;
-	 
-	 zbf=a_z * z_baro + (1-a_z)*zbf_a;
-	 zbf_a=zbf;
-	 
+// Función para manejar los mensajes de presión de fluidos recibidos
+void presCallback(const sensor_msgs::FluidPressure::ConstPtr & msg) 
+{
+    // Extraer la presión del fluido y la varianza del mensaje
+    fluid_press = msg->fluid_pressure;
+    diff_press = msg->variance;
+
+    // Calcular z_baro a partir de la presión del fluido
+    z_baro = fluid_press - 802.6;
+
+    // Calcular el coeficiente de filtrado a_z
+    a_z = 0.1061;
+
+    // Calcular la z filtrada
+    zbf = a_z * z_baro + (1 - a_z) * zbf_a;
+
+    // Actualizar zbf_a para la próxima iteración
+    zbf_a = zbf;
 }
 
 //Datos DVL
