@@ -62,22 +62,6 @@ fig, ax = plt.subplots()
 def rad_to_deg(rad):
     return rad * (180.0 / math.pi)
 
-# def write_to_file(filename, *args):
-    
-#     # Check if file exists, if not, create it
-#     if not os.path.exists(filename):
-#         open(filename, 'w').close()
-    
-#     # Open the file in append mode
-#     with open(filename, 'a') as f:
-#         # Iterate over each argument
-#         for data in args:
-#             # Write the data followed by a newline
-#             f.write(str(data)+' ')
-#         f.write('\n')
-
-
-
 def write_to_file(filename, *args):
     # Obtener la fecha y la hora actual
     now = datetime.datetime.now()
@@ -327,3 +311,67 @@ if __name__ == '__main__':
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# def write_to_file(filename, *args):
+    
+#     # Check if file exists, if not, create it
+#     if not os.path.exists(filename):
+#         open(filename, 'w').close()
+    
+#     # Open the file in append mode
+#     with open(filename, 'a') as f:
+#         # Iterate over each argument
+#         for data in args:
+#             # Write the data followed by a newline
+#             f.write(str(data)+' ')
+#         f.write('\n')
+    
+
+
+    
