@@ -171,11 +171,6 @@ def controlPDYaw(kp, kd, yawP, yawD, t):
     uThrusters = 1500 + u
     errorOld = errosYaw
 
-    # if uThrusters > 1700:
-    #     uThrusters = 1700
-    # elif uThrusters < 1300:
-    #     uThrusters = 1300
-
     return uThrusters
 
 def calculatePose(x, y, z, w):
