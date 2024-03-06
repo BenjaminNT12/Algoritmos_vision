@@ -254,7 +254,7 @@ def talker():
             print("Yaw degrees: ",Yaw, "Yaw Deseada: ", yawDesired)
             write_to_file('manualRigel', "Forward ", msgForward,
                           "Lateral ", msgLateral,
-                          "Yaw ", msgYaw, 
+                          "Yaw ", msgYaw,
                           "Yaw vel: ", imuVelZ,
                           "Yaw acc: ", imuLinAccZ,
                           "Deph ", msgDeph,
