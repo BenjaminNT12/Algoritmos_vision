@@ -2,10 +2,9 @@ import math
 import numpy as np
 import cv2 as cv
 
-# PATH = '/home/nicolas/Github/Algoritmos_vision/video3.mp4'
-PATH = '/home/nicolas/Github/Algoritmos_vision/Videos/marcadoresAzules.mp4'
+# PATH = '/home/nicolas/Github/Algoritmos_vision/Videos/video3.mp4'
 # lower_color [135   2 254] upper_color [158   4 255]-
-# PATH = 0
+PATH = 2
 
 PTS_COMPLETE = False
 COUNT = 0
@@ -13,23 +12,23 @@ SET_ROTATION = 0.0
 
 coordenadas = []
 new_cordinates = np.array([])
-START_SECOND = 10
-RESTART_SECOND = 20
+START_SECOND = 80
+RESTART_SECOND = 80
 
 ix, iy = 0, 0
 xf, yf = 0, 0
 RECTANGLE_COMPLETE = False
 DOWN = False
 
-h_min, s_min, v_min = 88, 33, 214
-h_max, s_max, v_max = 99, 172, 255
+h_min, s_min, v_min = 0, 0, 251
+h_max, s_max, v_max = 165, 2, 254
 
 lower_color = np.array([h_min, s_min, v_min])
 upper_color = np.array([h_max, s_max, v_max])
 
 HSV_RANGE_COMPLETE = False
 
-AREA_THRESHOLD = 250
+AREA_THRESHOLD = 10
 
 cap = cv.VideoCapture(PATH)
 
@@ -50,6 +49,8 @@ K3 = 0.11274677130853494
 FX, FY = ancho_imagen, alto_imagen
 CX, CY = int(ancho_imagen/2), int(alto_imagen/2)
 
+NUMERO_DE_PUNTOS = 4
+
 cameraMatrix = np.array(
     [[FX, 0, CX],
      [0, FY, CY],
@@ -61,7 +62,6 @@ distCoeffs = np.array([K1, K2, K1, P2, K3], dtype=np.float32)
 objectPoints = np.array(
     [[190.0, 190.0, 0.0],
      [0.0, 190.0, 0.0],
-     [95.0, 45.0, 0.0],
      [190.0, 0.0, 0.0],
      [0.0, 0.0, 0.0]], dtype=np.float32)
 
@@ -126,7 +126,7 @@ def calcular_pose(puntos):
     global SET_ROTATION
 
     # Verificar que haya exactamente 5 puntos
-    if puntos.shape != (4, 2):
+    if puntos.shape != (NUMERO_DE_PUNTOS, 2):
         raise ValueError(
             "Se requiere una matriz de 4 filas y 2 columnas para calcular la pose.")
 
@@ -141,8 +141,8 @@ def calcular_pose(puntos):
     # Calcular la posición relativa de la pose
     posicion = np.array([centro_x, centro_y])
 
-    x_pos = new_cordinates[3][1] - posicion[1]
-    y_pos = new_cordinates[3][0] - posicion[0]
+    x_pos = new_cordinates[NUMERO_DE_PUNTOS-1][1] - posicion[1]
+    y_pos = new_cordinates[NUMERO_DE_PUNTOS-1][0] - posicion[0]
 
     orientacion_deg = math.atan2(y_pos, x_pos) * (180.0 / math.pi)
     if SET_ROTATION == 0.0:
@@ -209,9 +209,9 @@ def calculate_distance(cordinates):
         _type_: _description_
     """
     dist1 = distance(cordinates[0][:], cordinates[1][:])
-    dist2 = distance(cordinates[1][:], cordinates[4][:])
+    dist2 = distance(cordinates[1][:], cordinates[2][:])
     dist3 = distance(cordinates[0][:], cordinates[3][:])
-    dist4 = distance(cordinates[3][:], cordinates[4][:])
+    dist4 = distance(cordinates[3][:], cordinates[2][:])
 
     d1cm = 85.638 - 0.152*dist1  # polinomio de ajuste d1
     d2cm = 86.952 - 0.163*dist2  # polinomio de ajuste d2
@@ -243,7 +243,7 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
 
     color_mask = cv.erode(color_mask, None, iterations=2)
     color_mask = cv.dilate(color_mask, None, iterations=2)
-
+    cv.imshow('mask', color_mask)
     # Encontrar los contornos de los objetos de color
     contours, _ = cv.findContours(
         color_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
@@ -252,7 +252,7 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
     for contour in contours:
         # Calcular el área del contorno
         area = cv.contourArea(contour)
-
+        # print("area: ", area)
         # Descartar contornos pequeños
         if area > AREA_THRESHOLD:
             # Calcular el centroide del contorno
@@ -260,81 +260,81 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
             centroid_x = int(moment["m10"] / moment["m00"])
             centroid_y = int(moment["m01"] / moment["m00"])
 
-            # if PTS_COMPLETE is False:
-            #     coordenadas.append([centroid_x, centroid_y])
-            #     new_cordinates = np.array(coordenadas)
-            # else:
-            #     actual_coordinates = np.array([centroid_x, centroid_y])
-            #     position = dentro_de_area(
-            #         new_cordinates, actual_coordinates, 50)
-            #     np.put(new_cordinates, [len(actual_coordinates)*position,
-            #            len(actual_coordinates)*position + 1], actual_coordinates)
+            if PTS_COMPLETE is False:
+                coordenadas.append([centroid_x, centroid_y])
+                new_cordinates = np.array(coordenadas)
+            else:
+                actual_coordinates = np.array([centroid_x, centroid_y])
+                position = dentro_de_area(
+                    new_cordinates, actual_coordinates, 50)
+                np.put(new_cordinates, [len(actual_coordinates)*position,
+                       len(actual_coordinates)*position + 1], actual_coordinates)
 
-            #     print("Longitud de coordenadas", len(new_cordinates))
-            #     translacion, angle = calcular_pose(new_cordinates)
+                translacion, angle = calcular_pose(new_cordinates)
 
-            #     cv.circle(frame_to_track, (int(translacion[0]), int(
-            #         translacion[1])), 5, (0, 0, 0), -1)
+                cv.circle(frame_to_track, (int(translacion[0]), int(
+                    translacion[1])), 5, (0, 0, 0), -1)
 
-                # draw_line(frame_to_track, new_cordinates[0][:],
-                #           new_cordinates[1][:], thickness=3)
-                # draw_line(frame_to_track, new_cordinates[1][:],
-                #           new_cordinates[4][:], thickness=3)
-                # draw_line(frame_to_track, new_cordinates[0][:],
-                #           new_cordinates[3][:], thickness=3)
-                # draw_line(frame_to_track, new_cordinates[3][:],
-                #           new_cordinates[4][:], thickness=3)
+                draw_line(frame_to_track, new_cordinates[0][:],
+                          new_cordinates[1][:], thickness=3)
+                draw_line(frame_to_track, new_cordinates[1][:],
+                          new_cordinates[2][:], thickness=3)
+                draw_line(frame_to_track, new_cordinates[2][:],
+                          new_cordinates[3][:], thickness=3)
+                draw_line(frame_to_track, new_cordinates[3][:],
+                          new_cordinates[0][:], thickness=3)
 ############################################################################################################
-                # plot_points(frame_to_track, objectPoints)
-                # coordenadas_float = np.array(new_cordinates, dtype=np.float32)
-                # if (len(new_cordinates) > 3):
-                #     _, rotacion3d, translacion3D = estimar_pose_3D(objectPoints,
-                #                                                    coordenadas_float,
-                #                                                    cameraMatrix,
-                #                                                    distCoeffs)
-                #     print("translacion: ", translacion3D)
-                #     cv.putText(frame_to_track,
-                #                "Rotacion X: " + str(int(math.degrees(rotacion3d[0]))),
-                #                (20, 60), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
-                #     cv.putText(frame_to_track,
-                #                "Rotacion Y: " + str(int(math.degrees(rotacion3d[1]))),
-                #                (20, 80), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
-                #     cv.putText(frame_to_track, 
-                #                "Rotacion Z: " + str(int(math.degrees(rotacion3d[2]))),
-                #                (20, 100), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                plot_points(frame_to_track, objectPoints)
+                coordenadas_float = np.array(new_cordinates, dtype=np.float32)
 
-                #     cv.imshow("frame_to_track", frame_to_track)
-                #     nose_end_point2D, jacobian = cv.projectPoints(
-                #         np.array([(0.0, 0.0, 1000.0)]),
-                #         rotacion3d,
-                #         translacion3D,
-                #         cameraMatrix,
-                #         distCoeffs)
+                if (len(new_cordinates) > NUMERO_DE_PUNTOS-1):
+                    _, rotacion3d, translacion3D = estimar_pose_3D(objectPoints,
+                                                                   coordenadas_float,
+                                                                   cameraMatrix,
+                                                                   distCoeffs)
+                    print("translacion: ", translacion3D)
+                    cv.putText(frame_to_track,
+                               "Rotacion X: " + str(int(math.degrees(rotacion3d[0]))),
+                               (20, 60), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                    cv.putText(frame_to_track,
+                               "Rotacion Y: " + str(int(math.degrees(rotacion3d[1]))),
+                               (20, 80), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                    cv.putText(frame_to_track, 
+                               "Rotacion Z: " + str(int(math.degrees(rotacion3d[2]))),
+                               (20, 100), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
 
-                #     point1 = (int(new_cordinates[0][0]),
-                #               int(new_cordinates[0][1]))
+                    
+                    nose_end_point2D, jacobian = cv.projectPoints(
+                        np.array([(0.0, 0.0, 1000.0)]),
+                        rotacion3d,
+                        translacion3D,
+                        cameraMatrix,
+                        distCoeffs)
 
-                #     point2 = (int(nose_end_point2D[0][0][0]),
-                #               int(nose_end_point2D[0][0][1]))
-                    # print(nose_end_point2D)
-                    # cv.line(frame_to_track, point1, point2, (0, 0, 0), 2)
+                    point1 = (int(new_cordinates[0][0]),
+                              int(new_cordinates[0][1]))
+
+                    point2 = (int(nose_end_point2D[0][0][0]),
+                              int(nose_end_point2D[0][0][1]))
+                    print(nose_end_point2D)
+                    cv.line(frame_to_track, point1, point2, (0, 0, 0), 2)
 ############################################################################################################
-                # d1cm, d2cm, d3cm, d4cm = calculate_distance(new_cordinates)
+                d1cm, d2cm, d3cm, d4cm = calculate_distance(new_cordinates)
 
-                # cv.putText(frame_to_track, "Angulo: " + str(int(angle)) + " Grados",
-                #            (20, 20), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                cv.putText(frame_to_track, "Angulo: " + str(int(angle)) + " Grados",
+                           (20, 20), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
 
-                # cv.putText(frame_to_track, "Distancias: "
-                #            + str(int(d1cm)) + "cm ,"
-                #            + str(int(d2cm)) + "cm ,"
-                #            + str(int(d3cm)) + "cm ,"
-                #            + str(int(d4cm)) + "cm ",
-                #            (20, 40), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                cv.putText(frame_to_track, "Distancias: "
+                           + str(int(d1cm)) + "cm ,"
+                           + str(int(d2cm)) + "cm ,"
+                           + str(int(d3cm)) + "cm ,"
+                           + str(int(d4cm)) + "cm ",
+                           (20, 40), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
 
             cv.putText(frame_to_track, str(position), (centroid_x - 25, centroid_y - 25),
                        cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 2)
             cv.circle(frame_to_track, (centroid_x, centroid_y),
-                      20, (0, 255, 0), -1)
+                      12, (0, 255, 0), -1)
 
     PTS_COMPLETE = True
     return color_mask
@@ -417,9 +417,9 @@ start_frame = get_frame_number(cap, START_SECOND)
 cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
 
 
-fourcc = cv.VideoWriter_fourcc(*'XVID')
-out = cv.VideoWriter("orientacion.avi", fourcc, 30,
-                     ((int(cap.get(4)), int(cap.get(3)))))
+# fourcc = cv.VideoWriter_fourcc(*'XVID')
+# out = cv.VideoWriter("orientacion.avi", fourcc, 30,
+                    #  ((int(cap.get(4)), int(cap.get(3)))))
 
 while True:
 
@@ -429,16 +429,18 @@ while True:
         break
 
     frame = cv.flip(frame, 1)
-    frame = enhance_image(frame)
+    frame = cv.resize(frame, (int(cap.get(3)/4), int(cap.get(4)/4)))
+    # frame = enhance_image(frame)
 
     if HSV_RANGE_COMPLETE or cv.waitKey(1) & 0xFF == ord('a'):
         HSV_RANGE_COMPLETE = True
+        print("Comienza la deteccion de color")
         mask = color_tracking(frame, lower_color, upper_color)
 
     cv.imshow('frame', frame)
-    out.write(frame)
-    if cv.waitKey(1) == ord('q'):
+    # out.write(frame)
+    if cv.waitKey(1) & 0xFF == ord('q'):
         break
 cap.release()
-out.release()
+# out.release()
 cv.destroyAllWindows()

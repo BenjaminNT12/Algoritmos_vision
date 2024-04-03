@@ -5,7 +5,8 @@ import math
 # import time
 
 # # path = '/home/nicolas/Github/videos/video9.MOV'
-path = '/home/nicolas/Github/Algoritmos_vision/Videos/marcadoresAzules.mp4'
+# path = '/home/nicolas/Github/Algoritmos_vision/Videos/marcadoresAzules.mp4'
+path = 2
 
 start_second = 10
 restart_second = 10

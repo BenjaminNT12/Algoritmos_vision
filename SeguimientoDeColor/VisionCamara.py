@@ -55,7 +55,7 @@ def webcam(cam, color_avr):
         opening = cv2.morphologyEx(mascara,cv2.MORPH_OPEN,kernel)
         contours,hierarchy = cv2.findContours(opening,1,2)
         cv2.drawContours(frame,contours,-1,(0,255,0),3)
-        print(contours)
+        # print(contours)
         for cnt in contours:
             if np.size(cnt)>500:
                 x,y,w,h = cv2.boundingRect(cnt)
@@ -72,7 +72,7 @@ def webcam(cam, color_avr):
 def main():
     global board,p
     p = False
-    cam = cv2.VideoCapture(0)
+    cam = cv2.VideoCapture(2)
     board = np.zeros((int(cam.get(4)),int(cam.get(3)),3),dtype = np.uint8)
     while(True):
         ret,frame=cam.read()

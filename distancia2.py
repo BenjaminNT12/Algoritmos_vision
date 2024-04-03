@@ -4,7 +4,7 @@ import cv2 as cv
 
 # PATH = '/home/nicolas/Github/Algoritmos_vision/video3.mp4'
 # lower_color [135   2 254] upper_color [158   4 255]-
-PATH = 0
+PATH = 2
 
 PTS_COMPLETE = False
 COUNT = 0
@@ -428,6 +428,7 @@ while True:
         break
 
     frame = cv.flip(frame, 1)
+    frame = cv.resize(frame, (int(cap.get(3)/4), int(cap.get(4)/4)))
     # frame = enhance_image(frame)
 
     if HSV_RANGE_COMPLETE or cv.waitKey(1) & 0xFF == ord('a'):

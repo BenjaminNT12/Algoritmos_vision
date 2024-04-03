@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-path = r'C:\Users\benja\github\Algoritmos_vision\video1.mp4'
-cap = cv2.VideoCapture(path)
+# path = r'C:\Users\benja\github\Algoritmos_vision\video1.mp4'
+cap = cv2.VideoCapture(2)
 
 while(1):
 
