@@ -72,7 +72,7 @@ def webcam(cam, color_avr):
 def main():
     global board,p
     p = False
-    cam = cv2.VideoCapture(2)
+    cam = cv2.VideoCapture(0)
     board = np.zeros((int(cam.get(4)),int(cam.get(3)),3),dtype = np.uint8)
     while(True):
         ret,frame=cam.read()

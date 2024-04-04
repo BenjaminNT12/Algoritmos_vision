@@ -1,0 +1,1 @@
+opening = cv2.morphologyEx(mascara,cv2.MORPH_OPEN,kernel)

@@ -4,7 +4,7 @@ import cv2 as cv
 
 # PATH = '/home/nicolas/Github/Algoritmos_vision/Videos/video3.mp4'
 # lower_color [135   2 254] upper_color [158   4 255]-
-PATH = 2
+PATH = 0
 
 PTS_COMPLETE = False
 COUNT = 0
@@ -20,15 +20,16 @@ xf, yf = 0, 0
 RECTANGLE_COMPLETE = False
 DOWN = False
 
-h_min, s_min, v_min = 0, 0, 251
-h_max, s_max, v_max = 165, 2, 254
+h_min, s_min, v_min = 255, 255, 255
+h_max, s_max, v_max = 255, 255, 255
+
 
 lower_color = np.array([h_min, s_min, v_min])
 upper_color = np.array([h_max, s_max, v_max])
 
 HSV_RANGE_COMPLETE = False
 
-AREA_THRESHOLD = 10
+AREA_THRESHOLD = 600
 
 cap = cv.VideoCapture(PATH)
 
@@ -65,6 +66,36 @@ objectPoints = np.array(
      [190.0, 0.0, 0.0],
      [0.0, 0.0, 0.0]], dtype=np.float32)
 
+
+def draw_rectangle(event, x_coord, y_coord, flags, param):
+    """_summary_
+
+    Args:
+        event (_type_): _description_
+        x (_type_): _description_
+        y (_type_): _description_
+        flags (_type_): _description_
+        param (_type_): _description_
+
+    Raises:
+        ValueError: _description_
+
+    Returns:
+        _type_: _description_
+    """
+    global ix, iy, xf, yf, RECTANGLE_COMPLETE, DOWN
+
+    if event == cv.EVENT_LBUTTONDOWN:
+        ix, iy = x_coord, y_coord
+        DOWN = True
+    elif event == cv.EVENT_MOUSEMOVE and DOWN is True:
+        if DOWN is True:
+            rectangle_mask[:] = 0
+            cv.rectangle(rectangle_mask, (ix, iy), (x_coord, y_coord), (0, 0, 255), 1)
+            xf, yf = x_coord, y_coord
+    elif event == cv.EVENT_LBUTTONUP:
+        DOWN = False
+        RECTANGLE_COMPLETE = True
 
 def plot_points(frame_to_draw, points):
     """Funcion para plotear los puntos en la imagen
@@ -201,7 +232,7 @@ def distance(point_1, point_2):
 
 def calculate_distance(cordinates):
     """_summary_
-
+|
     Args:
         cordinates (_type_): _description_
 
@@ -209,9 +240,9 @@ def calculate_distance(cordinates):
         _type_: _description_
     """
     dist1 = distance(cordinates[0][:], cordinates[1][:])
-    dist2 = distance(cordinates[1][:], cordinates[2][:])
-    dist3 = distance(cordinates[0][:], cordinates[3][:])
-    dist4 = distance(cordinates[3][:], cordinates[2][:])
+    dist2 = distance(cordinates[1][:], cordinates[3][:])
+    dist3 = distance(cordinates[3][:], cordinates[2][:])
+    dist4 = distance(cordinates[2][:], cordinates[0][:])
 
     d1cm = 85.638 - 0.152*dist1  # polinomio de ajuste d1
     d2cm = 86.952 - 0.163*dist2  # polinomio de ajuste d2
@@ -237,23 +268,24 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
     position = 0
     translacion = 0
 
-    hsv_frame = cv.cvtColor(frame_to_track, cv.COLOR_RGB2HSV)
-    color_mask = cv.inRange(
-        hsv_frame, lower_color_to_track, upper_color_to_track)
+    kernel = np.ones((5,5),np.uint8)
+    color_mask = cv.inRange(frame_to_track, lower_color_to_track, upper_color_to_track)
 
-    color_mask = cv.erode(color_mask, None, iterations=2)
-    color_mask = cv.dilate(color_mask, None, iterations=2)
-    cv.imshow('mask', color_mask)
-    # Encontrar los contornos de los objetos de color
-    contours, _ = cv.findContours(
-        color_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    opening = cv.morphologyEx(color_mask,cv.MORPH_OPEN,kernel)
+    contours,_ = cv.findContours(opening,1,2)
+    cv.drawContours(frame_to_track,contours,-1,(0,255,0),3)
 
-    # Realizar el seguimiento de los objetos de color
+#     # Encontrar los contornos de los objetos de color
+#     contours, _ = cv.findContours(
+#         color_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+#     # Realizar el seguimiento de los objetos de color
     for contour in contours:
         # Calcular el área del contorno
         area = cv.contourArea(contour)
         # print("area: ", area)
         # Descartar contornos pequeños
+        print("area: ", area)
         if area > AREA_THRESHOLD:
             # Calcular el centroide del contorno
             moment = cv.moments(contour)
@@ -278,10 +310,10 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
                 draw_line(frame_to_track, new_cordinates[0][:],
                           new_cordinates[1][:], thickness=3)
                 draw_line(frame_to_track, new_cordinates[1][:],
-                          new_cordinates[2][:], thickness=3)
-                draw_line(frame_to_track, new_cordinates[2][:],
                           new_cordinates[3][:], thickness=3)
                 draw_line(frame_to_track, new_cordinates[3][:],
+                          new_cordinates[2][:], thickness=3)
+                draw_line(frame_to_track, new_cordinates[2][:],
                           new_cordinates[0][:], thickness=3)
 ############################################################################################################
                 plot_points(frame_to_track, objectPoints)
@@ -355,6 +387,31 @@ def get_frame_number(video, second):
     return frame_number
 
 
+def webcam(color_avr):
+    global lower_color, upper_color
+    # kernel = np.ones((5,5),np.uint8)
+    def add(m,num):
+        output = np.array([0,0,0],np.uint8)
+        print("print m = ",m)
+        for i,e in enumerate(m):
+            print("print i = ", i)
+            print("print e = ", e)
+
+            q = e+num
+
+            if q >= 0 and q <= 255:
+                output[i] = q
+            elif q > 255:
+                output[i] = 255
+            else:
+                output[i] = 0
+        return output
+    upper_color = add(color_avr,30)
+    lower_color = add(color_avr,-30)
+    print("color_avr:\t",color_avr)
+    print("rangomax:\t",upper_color)
+    print("rangomin:\t",lower_color)
+
 def get_hsv_range(frame_rgb, x_min, y_min, x_max, y_max):
     """_summary_
 
@@ -369,22 +426,32 @@ def get_hsv_range(frame_rgb, x_min, y_min, x_max, y_max):
         _type_: _description_
     """
 
+    ext = frame_rgb[y_min:y_max,x_min:x_max]
+    s = np.array([0,0,0])
+    for i in range(np.shape(ext)[0]):
+        for j in range(np.shape(ext)[1]):
+            s += ext[i][j]
+    webcam(s/((i+1)*(j+1)))
+
+
+
+
     # global lower_color, upper_color
 
-    hsv_frame = cv.cvtColor(frame_rgb, cv.COLOR_RGB2HSV)
-    roi = hsv_frame[y_min:y_max, x_min:x_max, :]
+    # hsv_frame = cv.cvtColor(frame_rgb, cv.COLOR_RGB2HSV)
+    # roi = hsv_frame[y_min:y_max, x_min:x_max, :]
 
-    h_channel_min = np.min(roi[:, :, 0])
-    h_channel_max = np.max(roi[:, :, 0])
-    s_channel_min = np.min(roi[:, :, 1])
-    s_channel_max = np.max(roi[:, :, 1])
-    v_channel_min = np.min(roi[:, :, 2])
-    v_channel_max = np.max(roi[:, :, 2])
+    # h_channel_min = np.min(roi[:, :, 0])
+    # h_channel_max = np.max(roi[:, :, 0])
+    # s_channel_min = np.min(roi[:, :, 1])
+    # s_channel_max = np.max(roi[:, :, 1])
+    # v_channel_min = np.min(roi[:, :, 2])
+    # v_channel_max = np.max(roi[:, :, 2])
 
-    low_color = np.array([h_channel_min, s_channel_min, v_channel_min])
-    up_color = np.array([h_channel_max, s_channel_max, v_channel_max])
+    # low_color = np.array([h_channel_min, s_channel_min, v_channel_min])
+    # up_color = np.array([h_channel_max, s_channel_max, v_channel_max])
 
-    return low_color, up_color
+    # return low_color, up_color
 
 
 def enhance_image(frame_to_enhance):
@@ -421,26 +488,74 @@ cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
 # out = cv.VideoWriter("orientacion.avi", fourcc, 30,
                     #  ((int(cap.get(4)), int(cap.get(3)))))
 
+# while True:
+
+#     ret, frame = cap.read()
+#     # print("type(frame): ", type(frame))
+#     if ret is False:
+#         break
+
+#     frame = cv.flip(frame, 1)
+#     # frame = cv.resize(frame, (int(cap.get(3)/4), int(cap.get(4)/4)))
+#     # frame = enhance_image(frame)
+
+#     if HSV_RANGE_COMPLETE or cv.waitKey(1) & 0xFF == ord('a'):
+#         HSV_RANGE_COMPLETE = True
+#         print("Comienza la deteccion de color")
+#         mask = color_tracking(frame, lower_color, upper_color)
+
+#     cv.imshow('frame', frame)
+#     # out.write(frame)
+#     if cv.waitKey(1) & 0xFF == ord('q'):
+#         break
+# cap.release()
+# # out.release()
+# cv.destroyAllWindows()
+
+
+
 while True:
 
     ret, frame = cap.read()
-    # print("type(frame): ", type(frame))
-    if ret is False:
-        break
+    if ret == False: break
 
     frame = cv.flip(frame, 1)
-    frame = cv.resize(frame, (int(cap.get(3)/4), int(cap.get(4)/4)))
-    # frame = enhance_image(frame)
+    # frame = mejorar_imagen(frame)
+
+    if cv.waitKey(1) & 0xFF == ord('p'):
+        print("Selección de region de interés")
+        while True:
+            temp_frame = np.zeros((int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
+
+            if RECTANGLE_COMPLETE == False:
+                cv.namedWindow('frame')
+                cv.setMouseCallback('frame', draw_rectangle)
+                cv.addWeighted(frame, 1, rectangle_mask, 1, 0, temp_frame)
+
+            if RECTANGLE_COMPLETE == True and HSV_RANGE_COMPLETE == False:
+                get_hsv_range(frame, ix, iy, xf, yf)
+                HSV_RANGE_COMPLETE = True
+                print("lower_color", lower_color, "upper_color", upper_color)
+                # start_frame = get_frame_number(cap, RESTART_SECOND)
+                # cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
+
+            cv.imshow('frame', temp_frame)
+
+            if cv.waitKey(1) & 0xFF == ord('p') or HSV_RANGE_COMPLETE == True:
+                break
 
     if HSV_RANGE_COMPLETE or cv.waitKey(1) & 0xFF == ord('a'):
         HSV_RANGE_COMPLETE = True
-        print("Comienza la deteccion de color")
         mask = color_tracking(frame, lower_color, upper_color)
+        cv.imshow('mask', mask)
+        print("Comienza la deteccion de color")
+        # cv.imshow('mask', mask)
 
     cv.imshow('frame', frame)
-    # out.write(frame)
-    if cv.waitKey(1) & 0xFF == ord('q'):
+
+    # time.sleep(0.02)
+
+    if cv.waitKey(1) & 0xFF == ord("q"):
         break
 cap.release()
-# out.release()
 cv.destroyAllWindows()

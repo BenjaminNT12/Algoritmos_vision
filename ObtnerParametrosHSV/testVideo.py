@@ -6,7 +6,7 @@ import math
 
 # # path = '/home/nicolas/Github/videos/video9.MOV'
 # path = '/home/nicolas/Github/Algoritmos_vision/Videos/marcadoresAzules.mp4'
-path = 2
+path = 0
 
 start_second = 10
 restart_second = 10
@@ -16,8 +16,8 @@ xf, yf = 0, 0
 selection = False
 down = False
 
-h_min, s_min, v_min = 88, 33, 214
-h_max, s_max, v_max = 99, 172, 255
+h_min, s_min, v_min = 143, 4, 255
+h_max, s_max, v_max = 143, 4, 255
 
 lower_color = np.array([h_min, s_min, v_min])
 upper_color = np.array([h_max, s_max, v_max])
@@ -28,6 +28,8 @@ area_threshold = 20
 
 cap = cv.VideoCapture(path)
 
+# rectangle_mask = np.zeros((int(cap.get(4)/4), int(cap.get(3)/4), 3), dtype=np.uint8)
+# mask = np.zeros((int(cap.get(4)/4), int(cap.get(3)/4), 3), dtype=np.uint8)
 rectangle_mask = np.zeros((int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
 mask = np.zeros((int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
 
@@ -93,6 +95,8 @@ seleccion_roi = False
 while True:
     
     ret, frame = cap.read()
+    # frame = cv.resize(frame, (int(cap.get(3)/4), int(cap.get(4)/4)))
+    frame = cv.resize(frame, (int(cap.get(3)), int(cap.get(4))))
     if ret == False: 
         raise ValueError("No se pudo abrir el video")
         break
@@ -101,6 +105,7 @@ while True:
 
     if cv.waitKey(1) & 0x00FF == ord('p') and selection == False:
         while True:
+            # temp_frame = np.zeros((int(cap.get(4)/4), int(cap.get(3)/4), 3), dtype=np.uint8)
             temp_frame = np.zeros((int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
             
             if selection is False:
