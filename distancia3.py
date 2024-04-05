@@ -20,7 +20,7 @@ xf, yf = 0, 0
 RECTANGLE_COMPLETE = False
 DOWN = False
 
-h_min, s_min, v_min = 255, 255, 255
+h_min, s_min, v_min = 225, 221, 255
 h_max, s_max, v_max = 255, 255, 255
 
 
@@ -29,7 +29,7 @@ upper_color = np.array([h_max, s_max, v_max])
 
 HSV_RANGE_COMPLETE = False
 
-AREA_THRESHOLD = 600
+AREA_THRESHOLD = 500
 
 cap = cv.VideoCapture(PATH)
 
@@ -268,25 +268,27 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
     position = 0
     translacion = 0
 
+    numeroPuntos = 0
+
     kernel = np.ones((5,5),np.uint8)
     color_mask = cv.inRange(frame_to_track, lower_color_to_track, upper_color_to_track)
 
+    # Encontrar los contornos de los objetos de color
     opening = cv.morphologyEx(color_mask,cv.MORPH_OPEN,kernel)
     contours,_ = cv.findContours(opening,1,2)
     cv.drawContours(frame_to_track,contours,-1,(0,255,0),3)
 
-#     # Encontrar los contornos de los objetos de color
-#     contours, _ = cv.findContours(
-#         color_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
-#     # Realizar el seguimiento de los objetos de color
+    # Realizar el seguimiento de los objetos de color
     for contour in contours:
         # Calcular el área del contorno
         area = cv.contourArea(contour)
-        # print("area: ", area)
         # Descartar contornos pequeños
         print("area: ", area)
         if area > AREA_THRESHOLD:
+            numeroPuntos += 1
+            print(" aceptada")
+    
             # Calcular el centroide del contorno
             moment = cv.moments(contour)
             centroid_x = int(moment["m10"] / moment["m00"])
@@ -302,7 +304,7 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
                 np.put(new_cordinates, [len(actual_coordinates)*position,
                        len(actual_coordinates)*position + 1], actual_coordinates)
 
-                translacion, angle = calcular_pose(new_cordinates)
+                translacion, angle = calcular_pose(new_cordinates) # Se calcula la translacion y el angulo
 
                 cv.circle(frame_to_track, (int(translacion[0]), int(
                     translacion[1])), 5, (0, 0, 0), -1)
@@ -323,8 +325,8 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
                     _, rotacion3d, translacion3D = estimar_pose_3D(objectPoints,
                                                                    coordenadas_float,
                                                                    cameraMatrix,
-                                                                   distCoeffs)
-                    print("translacion: ", translacion3D)
+                                                                   distCoeffs) # Se calcula la rotacion y la translacion en 3D
+                    # print("translacion: ", translacion3D)
                     cv.putText(frame_to_track,
                                "Rotacion X: " + str(int(math.degrees(rotacion3d[0]))),
                                (20, 60), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
@@ -348,7 +350,7 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
 
                     point2 = (int(nose_end_point2D[0][0][0]),
                               int(nose_end_point2D[0][0][1]))
-                    print(nose_end_point2D)
+                    # print(nose_end_point2D)
                     cv.line(frame_to_track, point1, point2, (0, 0, 0), 2)
 ############################################################################################################
                 d1cm, d2cm, d3cm, d4cm = calculate_distance(new_cordinates)
@@ -368,6 +370,8 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
             cv.circle(frame_to_track, (centroid_x, centroid_y),
                       12, (0, 255, 0), -1)
 
+    # print("numero de puntos: ", numeroPuntos)
+    
     PTS_COMPLETE = True
     return color_mask
 
@@ -387,16 +391,12 @@ def get_frame_number(video, second):
     return frame_number
 
 
-def webcam(color_avr):
+def getHSVparameters(color_avr, bounds=10):
     global lower_color, upper_color
-    # kernel = np.ones((5,5),np.uint8)
+
     def add(m,num):
         output = np.array([0,0,0],np.uint8)
-        print("print m = ",m)
         for i,e in enumerate(m):
-            print("print i = ", i)
-            print("print e = ", e)
-
             q = e+num
 
             if q >= 0 and q <= 255:
@@ -406,8 +406,8 @@ def webcam(color_avr):
             else:
                 output[i] = 0
         return output
-    upper_color = add(color_avr,30)
-    lower_color = add(color_avr,-30)
+    upper_color = add(color_avr,bounds)
+    lower_color = add(color_avr,-bounds)
     print("color_avr:\t",color_avr)
     print("rangomax:\t",upper_color)
     print("rangomin:\t",lower_color)
@@ -431,27 +431,7 @@ def get_hsv_range(frame_rgb, x_min, y_min, x_max, y_max):
     for i in range(np.shape(ext)[0]):
         for j in range(np.shape(ext)[1]):
             s += ext[i][j]
-    webcam(s/((i+1)*(j+1)))
-
-
-
-
-    # global lower_color, upper_color
-
-    # hsv_frame = cv.cvtColor(frame_rgb, cv.COLOR_RGB2HSV)
-    # roi = hsv_frame[y_min:y_max, x_min:x_max, :]
-
-    # h_channel_min = np.min(roi[:, :, 0])
-    # h_channel_max = np.max(roi[:, :, 0])
-    # s_channel_min = np.min(roi[:, :, 1])
-    # s_channel_max = np.max(roi[:, :, 1])
-    # v_channel_min = np.min(roi[:, :, 2])
-    # v_channel_max = np.max(roi[:, :, 2])
-
-    # low_color = np.array([h_channel_min, s_channel_min, v_channel_min])
-    # up_color = np.array([h_channel_max, s_channel_max, v_channel_max])
-
-    # return low_color, up_color
+    getHSVparameters(s/((i+1)*(j+1)), 5)
 
 
 def enhance_image(frame_to_enhance):
@@ -480,82 +460,62 @@ def enhance_image(frame_to_enhance):
     return enhanced
 
 
-start_frame = get_frame_number(cap, START_SECOND)
-cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
+# start_frame = get_frame_number(cap, START_SECOND)
+# cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
 
 
 # fourcc = cv.VideoWriter_fourcc(*'XVID')
 # out = cv.VideoWriter("orientacion.avi", fourcc, 30,
                     #  ((int(cap.get(4)), int(cap.get(3)))))
 
-# while True:
 
-#     ret, frame = cap.read()
-#     # print("type(frame): ", type(frame))
-#     if ret is False:
-#         break
+def main():
+    global lower_color, upper_color, HSV_RANGE_COMPLETE, RECTANGLE_COMPLETE
+    
+    while True:
 
-#     frame = cv.flip(frame, 1)
-#     # frame = cv.resize(frame, (int(cap.get(3)/4), int(cap.get(4)/4)))
-#     # frame = enhance_image(frame)
+        ret, frame = cap.read()
+        if ret == False: break
 
-#     if HSV_RANGE_COMPLETE or cv.waitKey(1) & 0xFF == ord('a'):
-#         HSV_RANGE_COMPLETE = True
-#         print("Comienza la deteccion de color")
-#         mask = color_tracking(frame, lower_color, upper_color)
+        frame = cv.flip(frame, 1)
 
-#     cv.imshow('frame', frame)
-#     # out.write(frame)
-#     if cv.waitKey(1) & 0xFF == ord('q'):
-#         break
-# cap.release()
-# # out.release()
-# cv.destroyAllWindows()
+        if cv.waitKey(1) & 0xFF == ord('p'):
+            print("Selección de region de interés")
+            while True:
+                temp_frame = np.zeros((int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
 
+                if RECTANGLE_COMPLETE == False:
+                    cv.namedWindow('frame')
+                    cv.setMouseCallback('frame', draw_rectangle)
+                    cv.addWeighted(frame, 1, rectangle_mask, 1, 0, temp_frame)
 
+                if RECTANGLE_COMPLETE == True and HSV_RANGE_COMPLETE == False:
+                    get_hsv_range(frame, ix, iy, xf, yf)
+                    HSV_RANGE_COMPLETE = True
+                    # print("lower_color", lower_color, "upper_color", upper_color)
+                    # start_frame = get_frame_number(cap, RESTART_SECOND)
+                    # cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
 
-while True:
+                cv.imshow('frame', temp_frame)
 
-    ret, frame = cap.read()
-    if ret == False: break
+                if cv.waitKey(1) & 0xFF == ord('p') or HSV_RANGE_COMPLETE == True:
+                    break
 
-    frame = cv.flip(frame, 1)
-    # frame = mejorar_imagen(frame)
+        if HSV_RANGE_COMPLETE or cv.waitKey(1) & 0xFF == ord('a'):
+            HSV_RANGE_COMPLETE = True
+            mask = color_tracking(frame, lower_color, upper_color)
+            cv.imshow('mask', mask)
+            print("Comienza la deteccion de color")
+            # cv.imshow('mask', mask)
 
-    if cv.waitKey(1) & 0xFF == ord('p'):
-        print("Selección de region de interés")
-        while True:
-            temp_frame = np.zeros((int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
+        cv.imshow('frame', frame)
 
-            if RECTANGLE_COMPLETE == False:
-                cv.namedWindow('frame')
-                cv.setMouseCallback('frame', draw_rectangle)
-                cv.addWeighted(frame, 1, rectangle_mask, 1, 0, temp_frame)
+        # time.sleep(0.02)
 
-            if RECTANGLE_COMPLETE == True and HSV_RANGE_COMPLETE == False:
-                get_hsv_range(frame, ix, iy, xf, yf)
-                HSV_RANGE_COMPLETE = True
-                print("lower_color", lower_color, "upper_color", upper_color)
-                # start_frame = get_frame_number(cap, RESTART_SECOND)
-                # cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
+        if cv.waitKey(1) & 0xFF == ord("q"):
+            break
+    cap.release()
+    cv.destroyAllWindows()
 
-            cv.imshow('frame', temp_frame)
-
-            if cv.waitKey(1) & 0xFF == ord('p') or HSV_RANGE_COMPLETE == True:
-                break
-
-    if HSV_RANGE_COMPLETE or cv.waitKey(1) & 0xFF == ord('a'):
-        HSV_RANGE_COMPLETE = True
-        mask = color_tracking(frame, lower_color, upper_color)
-        cv.imshow('mask', mask)
-        print("Comienza la deteccion de color")
-        # cv.imshow('mask', mask)
-
-    cv.imshow('frame', frame)
-
-    # time.sleep(0.02)
-
-    if cv.waitKey(1) & 0xFF == ord("q"):
-        break
-cap.release()
-cv.destroyAllWindows()
+if __name__ == "__main__":
+    main()
