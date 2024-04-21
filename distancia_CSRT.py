@@ -7,7 +7,7 @@ import time
 path = '/home/nicolas/Videos/VideosPruebasApr17/pruebas4.AVI'
 # path = 0 
 
-tracker = cv.legacy.TrackerKCF_create()
+tracker = cv.legacy.TrackerCSRT_create()
 
 start_second = 86
 restart_second = 86
@@ -29,8 +29,10 @@ area_threshold = 20
 
 cap = cv.VideoCapture(path)
 
-rectangle_mask = np.zeros((int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
-mask = np.zeros((int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
+ESCALA = 30
+
+rectangle_mask = np.zeros((int(cap.get(4)* ESCALA / 100), int(cap.get(3)* ESCALA / 100), 3), dtype=np.uint8)
+mask = np.zeros((int(cap.get(4)* ESCALA / 100), int(cap.get(3)* ESCALA / 100), 3), dtype=np.uint8)
 
 # Función para el evento del mouse
 def draw_rectangle(event, x, y, flags, param):
@@ -70,6 +72,12 @@ def mejorar_imagen(frame):
 start_frame = get_frame_number(cap, start_second)
 cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
 
+def resize_frame(frame, scale_percent):
+    width = int(frame.shape[1] * scale_percent / 100)
+    height = int(frame.shape[0] * scale_percent / 100)
+    dim = (width, height)
+    return cv.resize(frame, dim, interpolation = cv.INTER_AREA)
+
 
 while True:
     start = time.time()
@@ -77,11 +85,12 @@ while True:
     if ret == False: break
 
     frame = cv.flip(frame, 1)
+    frame = resize_frame(frame, ESCALA)
     # frame = mejorar_imagen(frame)
 
     if cv.waitKey(1) & 0xFF == ord(' '):
         while True:
-            temp_frame = np.zeros((int(cap.get(4)), int(cap.get(3)), 3), dtype=np.uint8)
+            temp_frame = np.zeros((int(cap.get(4)* ESCALA / 100), int(cap.get(3)* ESCALA / 100), 3), dtype=np.uint8)
             
             if selection == False:
                 cv.namedWindow('frame')
