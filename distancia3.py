@@ -270,7 +270,7 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
     position = 0
     translacion = 0
 
-    numeroPuntos = 0
+    # numeroPuntos = 0
 
     kernel = np.ones((5,5),np.uint8)
     color_mask = cv.inRange(frame_to_track, lower_color_to_track, upper_color_to_track)
@@ -286,9 +286,9 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
         # Calcular el área del contorno
         area = cv.contourArea(contour)
         # Descartar contornos pequeños
-        print("area: ", area)
         if area > AREA_THRESHOLD:
-            numeroPuntos += 1
+            print("area: ", area)
+            # numeroPuntos += 1
             # print(" aceptada")
     
             # Calcular el centroide del contorno
@@ -296,85 +296,62 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
             centroid_x = int(moment["m10"] / moment["m00"])
             centroid_y = int(moment["m01"] / moment["m00"])
 
-#             if PTS_COMPLETE is False:
-#                 coordenadas.append([centroid_x, centroid_y])
-#                 new_cordinates = np.array(coordenadas)
-#             else:
-#                 actual_coordinates = np.array([centroid_x, centroid_y])
-#                 position = dentro_de_area(
-#                     new_cordinates, actual_coordinates, 50)
-#                 np.put(new_cordinates, [len(actual_coordinates)*position,
-#                        len(actual_coordinates)*position + 1], actual_coordinates)
+            if PTS_COMPLETE is False:
+                coordenadas.append([centroid_x, centroid_y])
+                new_cordinates = np.array(coordenadas)
+            else:
+                # if numeroPuntos == NUMERO_DE_PUNTOS:
+                #     PTS_COMPLETE = True
+                actual_coordinates = np.array([centroid_x, centroid_y])
+                position = dentro_de_area(new_cordinates, actual_coordinates, 100)
+                np.put(new_cordinates, [len(actual_coordinates)*position,len(actual_coordinates)*position + 1], actual_coordinates)
 
-#                 translacion, angle = calcular_pose(new_cordinates) # Se calcula la translacion y el angulo
+                # translacion, angle = calcular_pose(new_cordinates) # Se calcula la translacion y el angulo
 
-#                 cv.circle(frame_to_track, (int(translacion[0]), int(
-#                     translacion[1])), 5, (0, 0, 0), -1)
+                # cv.circle(frame_to_track, (int(translacion[0]), int(translacion[1])), 5, (0, 0, 0), -1)
 
-#                 draw_line(frame_to_track, new_cordinates[0][:],
-#                           new_cordinates[1][:], thickness=3)
-#                 draw_line(frame_to_track, new_cordinates[1][:],
-#                           new_cordinates[3][:], thickness=3)
-#                 draw_line(frame_to_track, new_cordinates[3][:],
-#                           new_cordinates[2][:], thickness=3)
-#                 draw_line(frame_to_track, new_cordinates[2][:],
-#                           new_cordinates[0][:], thickness=3)
-# ############################################################################################################
-#                 plot_points(frame_to_track, objectPoints)
-#                 coordenadas_float = np.array(new_cordinates, dtype=np.float32)
+                draw_line(frame_to_track, new_cordinates[0][:], new_cordinates[1][:], thickness=3)
+                draw_line(frame_to_track, new_cordinates[1][:], new_cordinates[3][:], thickness=3)
+                draw_line(frame_to_track, new_cordinates[3][:], new_cordinates[2][:], thickness=3)
+                draw_line(frame_to_track, new_cordinates[2][:], new_cordinates[0][:], thickness=3)
+############################################################################################################
+                # plot_points(frame_to_track, objectPoints)
+                # coordenadas_float = np.array(new_cordinates, dtype=np.float32)
 
-#                 if (len(new_cordinates) > NUMERO_DE_PUNTOS-1):
-#                     _, rotacion3d, translacion3D = estimar_pose_3D(objectPoints,
-#                                                                    coordenadas_float,
-#                                                                    cameraMatrix,
-#                                                                    distCoeffs) # Se calcula la rotacion y la translacion en 3D
-#                     # print("translacion: ", translacion3D)
-#                     cv.putText(frame_to_track,
-#                                "Rotacion X: " + str(int(math.degrees(rotacion3d[0]))),
-#                                (20, 60), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
-#                     cv.putText(frame_to_track,
-#                                "Rotacion Y: " + str(int(math.degrees(rotacion3d[1]))),
-#                                (20, 80), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
-#                     cv.putText(frame_to_track, 
-#                                "Rotacion Z: " + str(int(math.degrees(rotacion3d[2]))),
-#                                (20, 100), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
-
+                # if (len(new_cordinates) > NUMERO_DE_PUNTOS-1):
+                #     _, rotacion3d, translacion3D = estimar_pose_3D(objectPoints, coordenadas_float, cameraMatrix, distCoeffs) # Se calcula la rotacion y la translacion en 3D
+                #     # print("translacion: ", translacion3D)
+                #     cv.putText(frame_to_track, "Rotacion X: " + str(int(math.degrees(rotacion3d[0]))), (20, 60), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                #     cv.putText(frame_to_track, "Rotacion Y: " + str(int(math.degrees(rotacion3d[1]))), (20, 80), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                #     cv.putText(frame_to_track, "Rotacion Z: " + str(int(math.degrees(rotacion3d[2]))), (20, 100), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
                     
-#                     nose_end_point2D, jacobian = cv.projectPoints(
-#                         np.array([(0.0, 0.0, 1000.0)]),
-#                         rotacion3d,
-#                         translacion3D,
-#                         cameraMatrix,
-#                         distCoeffs)
+                #     nose_end_point2D, jacobian = cv.projectPoints( np.array([(0.0, 0.0, 1000.0)]), rotacion3d, translacion3D, cameraMatrix, distCoeffs)
 
-#                     point1 = (int(new_cordinates[0][0]),
-#                               int(new_cordinates[0][1]))
+                #     point1 = (int(new_cordinates[0][0]), int(new_cordinates[0][1]))
+                #     point2 = (int(nose_end_point2D[0][0][0]), int(nose_end_point2D[0][0][1]))
 
-#                     point2 = (int(nose_end_point2D[0][0][0]),
-#                               int(nose_end_point2D[0][0][1]))
-#                     # print(nose_end_point2D)
-#                     cv.line(frame_to_track, point1, point2, (0, 0, 0), 2)
-# ############################################################################################################
-#                 d1cm, d2cm, d3cm, d4cm = calculate_distance(new_cordinates)
+                #     # print(nose_end_point2D)
+                #     cv.line(frame_to_track, point1, point2, (0, 0, 0), 2)
+############################################################################################################
+                d1cm, d2cm, d3cm, d4cm = calculate_distance(new_cordinates)
 
-#                 cv.putText(frame_to_track, "Angulo: " + str(int(angle)) + " Grados",
-#                            (20, 20), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                # cv.putText(frame_to_track, "Angulo: " + str(int(angle)) + " Grados", (20, 20), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
 
-#                 cv.putText(frame_to_track, "Distancias: "
-#                            + str(int(d1cm)) + "cm ,"
-#                            + str(int(d2cm)) + "cm ,"
-#                            + str(int(d3cm)) + "cm ,"
-#                            + str(int(d4cm)) + "cm ",
-#                            (20, 40), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                cv.putText(frame_to_track, "Distancias: "
+                           + str(int(d1cm)) + "cm ,"
+                           + str(int(d2cm)) + "cm ,"
+                           + str(int(d3cm)) + "cm ,"
+                           + str(int(d4cm)) + "cm ",
+                           (20, 40), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
 
-#             cv.putText(frame_to_track, str(position), (centroid_x - 25, centroid_y - 25),
-#                        cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 2)
-#             cv.circle(frame_to_track, (centroid_x, centroid_y),
-#                       12, (0, 255, 0), -1)
+                cv.putText(frame_to_track, str(position), (centroid_x - 25, centroid_y - 25),
+                        cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 2)
+                cv.circle(frame_to_track, (centroid_x, centroid_y),
+                        12, (0, 255, 0), -1)
 
-    # print("numero de puntos: ", numeroPuntos)
     
-    PTS_COMPLETE = True
+    
+    
     return color_mask
 
 
@@ -411,6 +388,7 @@ def getHSVparameters(color_avr, bounds=50):
     print(color_avr.shape)
     upper_color = add(color_avr, bounds)
     lower_color = add(color_avr, -bounds)
+
     print("color_avr:\t",color_avr)
     print("rangomax:\t",upper_color)
     print("rangomin:\t",lower_color)
@@ -487,17 +465,59 @@ def main():
     cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
 
     while True:
-
+        startTime = time.time()
         ret, frame = cap.read()
-        # small_frame = resize_frame(frame, 50)
-        frame = resize_frame(frame, 50)
-        blue, green, red = cv.split(frame)
-        _, red = cv.threshold(red, 245, 245, cv.THRESH_BINARY)
-        frame_bw = cv.merge([red, red, red])
         if ret == False: 
             break
+        frame = resize_frame(frame, 50)
+        blue, green, red = cv.split(frame)
+        _, red = cv.threshold(red, 240, 255, cv.THRESH_BINARY)
+        frame = cv.merge([red, red, red])
+        frame = cv.medianBlur(frame, 5)
+        # Utiliza el detector de bordes Canny
+        frame = cv.Canny(frame, 50, 150)
+        kernel = np.ones((3,3), np.uint8)
+        frame = cv.dilate(frame, kernel, iterations=2)
+        frame = cv.erode(frame, kernel, iterations=1)
+        gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        contours2, _ = cv.findContours(gray, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
-        # frame = cv.flip(frame, 1)
+        # declares a empty list
+        areas = []
+
+        for contour in contours2:
+            area = cv.contourArea(contour)
+            areas.append(area)
+
+        # extract the maximum 4 areas
+        max_area = sorted(areas, reverse=True)[:4]
+
+        # # get the positions of the maximum 4 areas
+        # for i in range(4):
+        #     max_area[i] = areas.index(max_area[i])
+
+        
+
+
+        for contour in contours2:
+            area = cv.contourArea(contour)
+
+
+            # x, y, w, h = cv.boundingRect(contour)
+            # aspect_ratio = float(w)/h
+
+            # # Si el contorno es irregular, dibuja un contorno del mismo color que el fondo sobre él
+            # if aspect_ratio < 0.9 or aspect_ratio > 1.1:
+            #     cv.drawContours(frame, [contour], 0, (0,0,0), -1)
+
+            if area in max_area:
+            # Encuentra el círculo mínimo que encierra el contorno
+                (x,y),radius = cv.minEnclosingCircle(contour)
+                center = (int(x),int(y))
+                radius = int(radius)
+
+                # Dibuja el círculo en la imagen
+                frame = cv.circle(frame,center,radius,(0,255,0),2)
 
         if cv.waitKey(5) & 0xFF == ord('p'):
             print("Selección de region de interés")
@@ -507,11 +527,11 @@ def main():
                 if RECTANGLE_COMPLETE == False:
                     cv.namedWindow('frame')
                     cv.setMouseCallback('frame', draw_rectangle)
-                    # Asegurarse de que frame_bw y rectangle_mask tienen el mismo tamaño
-                    if frame_bw.shape == rectangle_mask.shape:
-                        cv.addWeighted(frame_bw, 1, rectangle_mask, 1, 0, temp_frame)
+                    # Asegurarse de que frame y rectangle_mask tienen el mismo tamaño
+                    if frame.shape == rectangle_mask.shape:
+                        cv.addWeighted(frame, 1, rectangle_mask, 1, 0, temp_frame)
                     else:
-                        print("frame_bw y rectangle_mask no tienen el mismo tamaño")
+                        print("frame y rectangle_mask no tienen el mismo tamaño")
 
                 if RECTANGLE_COMPLETE == True and HSV_RANGE_COMPLETE == False:
                     get_hsv_range(red, ix, iy, xf, yf)
@@ -520,28 +540,29 @@ def main():
                     # start_frame = get_frame_number(cap, RESTART_SECOND)
                     # cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
 
-                cv.imshow('frame', frame_bw)
+                cv.imshow('frame', temp_frame)
 
                 if cv.waitKey(1) & 0xFF == ord('p') or HSV_RANGE_COMPLETE == True:
                     break
 
         if HSV_RANGE_COMPLETE or cv.waitKey(5) & 0xFF == ord('a'):
             HSV_RANGE_COMPLETE = True
-            mask = color_tracking(frame_bw, lower_color, upper_color)
-            cv.imshow('mask', mask)
+            mask = color_tracking(frame, lower_color, upper_color)
+            # cv.imshow('mask', mask)
             # print("Comienza la deteccion de color")
             # cv.imshow('mask', mask)
 
         cv.imshow('frame', frame)
-        # bgr_image = cv.cvtColor(small_frame, cv.COLOR_BGR2HSV)
-        cv.imshow('blue', blue)
-        cv.imshow('green', green)
-        cv.imshow('red', frame_bw)
 
         # time.sleep(0.016)
 
         if cv.waitKey(1) & 0xFF == ord("q"):
             break
+        
+        endTime = time.time()
+        duration = endTime - startTime
+        print("tiempo de ejecucion: {:.4f} FPS: {:.2f}".format(duration, 1/duration))        
+
     cap.release()
     cv.destroyAllWindows()
 
