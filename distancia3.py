@@ -25,9 +25,47 @@ DOWN = False
 h_min, s_min, v_min = 225, 221, 255
 h_max, s_max, v_max = 255, 255, 255
 
-
 lower_color = np.array([h_min, s_min, v_min])
 upper_color = np.array([h_max, s_max, v_max])
+
+color1 = np.array([200, 238, 251])
+color2 = np.array([145, 146, 232])
+color3 = np.array([143, 144, 222])
+color4 = np.array([143, 144, 222])
+color5 = np.array([89, 87, 254])
+color6 = np.array([129, 134, 234])
+color7 = np.array([107, 158, 253])
+color8 = np.array([80, 89, 233])
+color9 = np.array([250, 250, 250])
+
+lower_color = color1 -15
+upper_color = color1 +15
+
+lower_color2 = color2-15
+upper_color2 = color2+15
+
+lower_color3 = color3-15
+upper_color3 = color3+15
+
+lower_color4 = color4-15
+upper_color4 = color4+15
+
+lower_color5 = color5-15
+upper_color5 = color5+15
+
+lower_color6 = color6-15
+upper_color6 = color6+15
+
+lower_color7 = color7-15
+upper_color7 = color7+15
+
+lower_color8 = color8-15
+upper_color8 = color8+15
+
+lower_color9 = color9-10
+upper_color9 = color9+15
+
+
 
 HSV_RANGE_COMPLETE = False
 
@@ -306,36 +344,36 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
                 position = dentro_de_area(new_cordinates, actual_coordinates, 100)
                 np.put(new_cordinates, [len(actual_coordinates)*position,len(actual_coordinates)*position + 1], actual_coordinates)
 
-                # translacion, angle = calcular_pose(new_cordinates) # Se calcula la translacion y el angulo
+                translacion, angle = calcular_pose(new_cordinates) # Se calcula la translacion y el angulo
 
-                # cv.circle(frame_to_track, (int(translacion[0]), int(translacion[1])), 5, (0, 0, 0), -1)
+                cv.circle(frame_to_track, (int(translacion[0]), int(translacion[1])), 5, (0, 0, 0), -1)
 
                 draw_line(frame_to_track, new_cordinates[0][:], new_cordinates[1][:], thickness=3)
                 draw_line(frame_to_track, new_cordinates[1][:], new_cordinates[3][:], thickness=3)
                 draw_line(frame_to_track, new_cordinates[3][:], new_cordinates[2][:], thickness=3)
                 draw_line(frame_to_track, new_cordinates[2][:], new_cordinates[0][:], thickness=3)
 ############################################################################################################
-                # plot_points(frame_to_track, objectPoints)
-                # coordenadas_float = np.array(new_cordinates, dtype=np.float32)
+                plot_points(frame_to_track, objectPoints)
+                coordenadas_float = np.array(new_cordinates, dtype=np.float32)
 
-                # if (len(new_cordinates) > NUMERO_DE_PUNTOS-1):
-                #     _, rotacion3d, translacion3D = estimar_pose_3D(objectPoints, coordenadas_float, cameraMatrix, distCoeffs) # Se calcula la rotacion y la translacion en 3D
-                #     # print("translacion: ", translacion3D)
-                #     cv.putText(frame_to_track, "Rotacion X: " + str(int(math.degrees(rotacion3d[0]))), (20, 60), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
-                #     cv.putText(frame_to_track, "Rotacion Y: " + str(int(math.degrees(rotacion3d[1]))), (20, 80), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
-                #     cv.putText(frame_to_track, "Rotacion Z: " + str(int(math.degrees(rotacion3d[2]))), (20, 100), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                if (len(new_cordinates) > NUMERO_DE_PUNTOS-1):
+                    _, rotacion3d, translacion3D = estimar_pose_3D(objectPoints, coordenadas_float, cameraMatrix, distCoeffs) # Se calcula la rotacion y la translacion en 3D
+                    # print("translacion: ", translacion3D)
+                    cv.putText(frame_to_track, "Rotacion X: " + str(int(math.degrees(rotacion3d[0]))), (20, 60), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                    cv.putText(frame_to_track, "Rotacion Y: " + str(int(math.degrees(rotacion3d[1]))), (20, 80), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                    cv.putText(frame_to_track, "Rotacion Z: " + str(int(math.degrees(rotacion3d[2]))), (20, 100), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
                     
-                #     nose_end_point2D, jacobian = cv.projectPoints( np.array([(0.0, 0.0, 1000.0)]), rotacion3d, translacion3D, cameraMatrix, distCoeffs)
+                    nose_end_point2D, jacobian = cv.projectPoints( np.array([(0.0, 0.0, 1000.0)]), rotacion3d, translacion3D, cameraMatrix, distCoeffs)
 
-                #     point1 = (int(new_cordinates[0][0]), int(new_cordinates[0][1]))
-                #     point2 = (int(nose_end_point2D[0][0][0]), int(nose_end_point2D[0][0][1]))
+                    point1 = (int(new_cordinates[0][0]), int(new_cordinates[0][1]))
+                    point2 = (int(nose_end_point2D[0][0][0]), int(nose_end_point2D[0][0][1]))
 
-                #     # print(nose_end_point2D)
-                #     cv.line(frame_to_track, point1, point2, (0, 0, 0), 2)
+                    # print(nose_end_point2D)
+                    cv.line(frame_to_track, point1, point2, (0, 0, 0), 2)
 ############################################################################################################
                 d1cm, d2cm, d3cm, d4cm = calculate_distance(new_cordinates)
 
-                # cv.putText(frame_to_track, "Angulo: " + str(int(angle)) + " Grados", (20, 20), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
+                cv.putText(frame_to_track, "Angulo: " + str(int(angle)) + " Grados", (20, 20), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
 
                 cv.putText(frame_to_track, "Distancias: "
                            + str(int(d1cm)) + "cm ,"
@@ -463,6 +501,13 @@ def main():
     
     start_frame = get_frame_number(cap, START_SECOND)
     cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
+    last_n_radii = [[0]*10 for _ in range(6)]
+    # last_n_center_x = [[0]*3 for _ in range(6)]
+    # last_n_center_y = [[0]*3 for _ in range(6)]
+    # avg_center_x = [0]*6
+    # avg_center_y = [0]*6
+    avg_radius = [0]*6
+    # avg_center = [(0, 0)]*6
 
     while True:
         startTime = time.time()
@@ -470,64 +515,103 @@ def main():
         if ret == False: 
             break
         frame = resize_frame(frame, 50)
-        blue, green, red = cv.split(frame)
-        _, red = cv.threshold(red, 240, 255, cv.THRESH_BINARY)
+        ###################################################################
+        # color_mask1 = cv.inRange(frame, lower_color, upper_color)
+        # cv.imshow('mask1', color_mask1)
+
+        # color_mask2 = cv.inRange(frame, lower_color2, upper_color2)
+        # cv.imshow('mask2', color_mask2)
+
+        # color_mask3 = cv.inRange(frame, lower_color3, upper_color3)
+        # cv.imshow('mask3', color_mask3)
+
+        # color_mask4 = cv.inRange(frame, lower_color4, upper_color4)
+        # cv.imshow('mask4', color_mask4)
+
+        # color_mask5 = cv.inRange(frame, lower_color5, upper_color5)
+        # cv.imshow('mask5', color_mask5)
+
+        # color_mask6 = cv.inRange(frame, lower_color6, upper_color6)
+        # cv.imshow('mask6', color_mask6)
+
+        # color_mask7 = cv.inRange(frame, lower_color7, upper_color7)
+        # cv.imshow('mask7', color_mask7)
+
+        # color_mask8 = cv.inRange(frame, lower_color8, upper_color8)
+        # cv.imshow('mask8', color_mask8)
+
+        color_mask9 = cv.inRange(frame, lower_color9, upper_color9)
+        _, color_mask9 = cv.threshold(color_mask9, 245, 245, cv.THRESH_BINARY)
+        # cv.bitwise_not(color_mask9, color_mask9)
+        cv.imshow('mask9', color_mask9)
+
+    
+        ###################################################################
+        frame2 = frame
+        _, _, red = cv.split(frame)
+        _, red = cv.threshold(red, 245, 245, cv.THRESH_BINARY)
+        red = cv.subtract(red, color_mask9)
+        # red = cv.subtract(red, color_mask1)
+        
         frame = cv.merge([red, red, red])
         frame = cv.medianBlur(frame, 5)
-        # Utiliza el detector de bordes Canny
-        frame = cv.Canny(frame, 50, 150)
-        kernel = np.ones((3,3), np.uint8)
-        frame = cv.dilate(frame, kernel, iterations=2)
-        frame = cv.erode(frame, kernel, iterations=1)
+        
+        ###################################################################
         gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         contours2, _ = cv.findContours(gray, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
         # declares a empty list
         areas = []
+        lower_y = []
 
         for contour in contours2:
             area = cv.contourArea(contour)
+            (x_rect, y_rect), radio = cv.minEnclosingCircle(contour)
             areas.append(area)
+            lower_y.append(y_rect)
 
-        # extract the maximum 4 areas
-        max_area = sorted(areas, reverse=True)[:4]
+        max_area = sorted(areas, reverse=True)[:6]
+        min_pos_area = sorted(lower_y, reverse=True)[:4]
 
-        # # get the positions of the maximum 4 areas
-        # for i in range(4):
-        #     max_area[i] = areas.index(max_area[i])
-
-        
-
-
+        i = 0
         for contour in contours2:
             area = cv.contourArea(contour)
-
-
-            # x, y, w, h = cv.boundingRect(contour)
-            # aspect_ratio = float(w)/h
-
-            # # Si el contorno es irregular, dibuja un contorno del mismo color que el fondo sobre él
-            # if aspect_ratio < 0.9 or aspect_ratio > 1.1:
-            #     cv.drawContours(frame, [contour], 0, (0,0,0), -1)
-
-            if area in max_area:
-            # Encuentra el círculo mínimo que encierra el contorno
-                (x,y),radius = cv.minEnclosingCircle(contour)
+            (x,y),radius = cv.minEnclosingCircle(contour)
+            if area in max_area and y in min_pos_area:
+                # print("i", i)
                 center = (int(x),int(y))
                 radius = int(radius)
+                # Agrega el nuevo radio a la lista de los últimos n radios
+                last_n_radii[i].append(radius)
+                # last_n_center_x[i].append(x)
+                # last_n_center_y[i].append(y)
 
-                # Dibuja el círculo en la imagen
-                frame = cv.circle(frame,center,radius,(0,255,0),2)
+                # Si la lista tiene más de n elementos, elimina el más antiguo
+                if len(last_n_radii[i]) > 10:
+                    last_n_radii[i].pop(0)
+                # if len(last_n_center_x[i]) > 3:
+                #     last_n_center_x[i].pop(0)
+                #     last_n_center_y[i].pop(0)
+
+                # Calcula el promedio de los últimos n radios
+                # avg_center_x[i] = sum(last_n_center_x[i]) / len(last_n_center_x[i])
+                # avg_center_y[i] = sum(last_n_center_y[i]) / len(last_n_center_y[i])
+                # avg_radius[i] = sum(last_n_radii[i]) / len(last_n_radii[i])
+
+                # avg_center[i] = (int(avg_center_x[i]), int(avg_center_y[i]))
+
+                i += 1
+                frame = cv.circle(frame,center,radius,(0,0,255),2)
+                frame2 = cv.circle(frame2,center,radius,(0,0,255),2)
 
         if cv.waitKey(5) & 0xFF == ord('p'):
             print("Selección de region de interés")
             while True:
                 temp_frame = np.zeros((int(cap.get(4)* 50 / 100), int(cap.get(3)* 50 / 100), 3), dtype=np.uint8)
-                # temp_frame = resize_frame(temp_frame, 50)
                 if RECTANGLE_COMPLETE == False:
                     cv.namedWindow('frame')
                     cv.setMouseCallback('frame', draw_rectangle)
-                    # Asegurarse de que frame y rectangle_mask tienen el mismo tamaño
+                
                     if frame.shape == rectangle_mask.shape:
                         cv.addWeighted(frame, 1, rectangle_mask, 1, 0, temp_frame)
                     else:
@@ -536,9 +620,6 @@ def main():
                 if RECTANGLE_COMPLETE == True and HSV_RANGE_COMPLETE == False:
                     get_hsv_range(red, ix, iy, xf, yf)
                     HSV_RANGE_COMPLETE = True
-                    # print("lower_color", lower_color, "upper_color", upper_color)
-                    # start_frame = get_frame_number(cap, RESTART_SECOND)
-                    # cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
 
                 cv.imshow('frame', temp_frame)
 
@@ -548,11 +629,9 @@ def main():
         if HSV_RANGE_COMPLETE or cv.waitKey(5) & 0xFF == ord('a'):
             HSV_RANGE_COMPLETE = True
             mask = color_tracking(frame, lower_color, upper_color)
-            # cv.imshow('mask', mask)
-            # print("Comienza la deteccion de color")
-            # cv.imshow('mask', mask)
 
         cv.imshow('frame', frame)
+        cv.imshow('frame2', frame2)
 
         # time.sleep(0.016)
 
