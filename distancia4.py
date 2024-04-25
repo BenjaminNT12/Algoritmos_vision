@@ -3,7 +3,7 @@ import numpy as np
 import cv2 as cv
 import time
 
-PATH = '/home/nicolas/Videos/VideosPruebasApr17/pruebas4.AVI'
+PATH = '/home/nicolas/Videos/VideosPruebasApr17/pruebas1.AVI'
 # lower_color [135   2 254] upper_color [158   4 255]-
 # PATH = 0
 
@@ -62,8 +62,8 @@ upper_color7 = color7+15
 lower_color8 = color8-15
 upper_color8 = color8+15
 
-lower_color9 = color9-20
-upper_color9 = color9+5
+lower_color9 = color9-10
+upper_color9 = color9+15
 
 
 
@@ -74,7 +74,8 @@ AREA_THRESHOLD = 500
 cap = cv.VideoCapture(PATH)
 
 
-rectangle_mask = np.zeros((int(cap.get(4)* 50 / 100), int(cap.get(3)* 50 / 100), 3), dtype=np.uint8)
+rectangle_mask = np.zeros(
+    (int(cap.get(4)* 50 / 100), int(cap.get(3)* 50 / 100), 3), dtype=np.uint8)
 mask = np.zeros((int(cap.get(4)* 50 / 100), int(cap.get(3)* 50 / 100), 3), dtype=np.uint8)
 
 ancho_imagen = int(cap.get(3))
@@ -90,7 +91,6 @@ FX, FY = ancho_imagen, alto_imagen
 CX, CY = int(ancho_imagen/2), int(alto_imagen/2)
 
 NUMERO_DE_PUNTOS = 4
-AREA_MINIMUM_THRESHOLD = 20
 
 cameraMatrix = np.array(
     [[FX, 0, CX],
@@ -489,57 +489,54 @@ def resize_frame(frame, scale_percent):
     return cv.resize(frame, dim, interpolation = cv.INTER_AREA)
 
 
-
 def main():
     global lower_color, upper_color, HSV_RANGE_COMPLETE, RECTANGLE_COMPLETE, cap
     
 
     while True:
-        start_time = time.time()
+        startTime = time.time()
         ret, frame = cap.read()
-
         if ret == False: 
             break
-        frame_real = resize_frame(frame, 50)
-        frame_to_process = frame_real
-
-        floor_mask = cv.inRange(frame_to_process, lower_color9, upper_color9)
-        _, floor_mask_binary = cv.threshold(floor_mask, 245, 245, cv.THRESH_BINARY)
-
-        _, _, red_Channel  = cv.split(frame_to_process)
-        _, red_Channel_binary = cv.threshold(red_Channel, 245, 245, cv.THRESH_BINARY)
-        frame_to_detect_binary = cv.subtract(red_Channel_binary, floor_mask_binary)
+        frame = resize_frame(frame, 50)
+    ############## PRETRATAMIENTO DE LA IMAGEN ################
+        color_mask9 = cv.inRange(frame, lower_color9, upper_color9)
+        _, color_mask9 = cv.threshold(color_mask9, 245, 245, cv.THRESH_BINARY)
+        # cv.imshow('mask9', color_mask9)
+        frame2 = frame
+        _, _, red = cv.split(frame)
+        _, red = cv.threshold(red, 245, 245, cv.THRESH_BINARY)
+        red = cv.subtract(red, color_mask9)
         
-        frame_to_detect = cv.merge([frame_to_detect_binary, frame_to_detect_binary, frame_to_detect_binary])
-        frame_to_detect = cv.medianBlur(frame_to_detect, 5)
+        frame = cv.merge([red, red, red])
+        frame = cv.medianBlur(frame, 5)
         
-        frame_to_detect_gray = cv.cvtColor(frame_to_detect, cv.COLOR_BGR2GRAY)
-        contours, _ = cv.findContours(frame_to_detect_gray, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+        gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        contours2, _ = cv.findContours(gray, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
         areas = []
         lower_y = []
 
-        for contour in contours:
+        for contour in contours2:
             area = cv.contourArea(contour)
-            if area > AREA_MINIMUM_THRESHOLD:
-                print("area", area)
-                (_, y_pos), _ = cv.minEnclosingCircle(contour)
-                areas.append(area)
-                lower_y.append(y_pos)
+            (x_rect, y_rect), radio = cv.minEnclosingCircle(contour)
+            areas.append(area)
+            lower_y.append(y_rect)
 
         max_area = sorted(areas, reverse=True)[:6]
         min_pos_area = sorted(lower_y, reverse=True)[:4]
 
-        for contour in contours:
+        for contour in contours2:
             area = cv.contourArea(contour)
             (x,y),radius = cv.minEnclosingCircle(contour)
-
             if area in max_area and y in min_pos_area:
                 
-                center, radius = (int(x),int(y)), int(radius)
-                frame_to_detect = cv.circle(frame_to_detect,center,radius,(0,255,0),-1)
-                frame_real = cv.circle(frame_real,center,radius,(0,255,0),2)
-    
+                center = (int(x),int(y))
+                radius = int(radius)
+
+                frame = cv.circle(frame,center,radius,(0,0,255),2)
+                frame2 = cv.circle(frame2,center,radius,(0,0,255),2)
+    ############## PRETRATAMIENTO DE LA IMAGEN ################
 
         if cv.waitKey(5) & 0xFF == ord('p'):
             print("Selección de region de interés")
@@ -550,31 +547,31 @@ def main():
                     cv.setMouseCallback('frame', draw_rectangle)
                 
                     if frame.shape == rectangle_mask.shape:
-                        cv.addWeighted(frame_to_detect, 1, rectangle_mask, 1, 0, temp_frame)
+                        cv.addWeighted(frame, 1, rectangle_mask, 1, 0, temp_frame)
                     else:
                         print("frame y rectangle_mask no tienen el mismo tamaño")
 
                 if RECTANGLE_COMPLETE == True and HSV_RANGE_COMPLETE == False:
-                    get_hsv_range(frame_to_detect, ix, iy, xf, yf)
+                    get_hsv_range(red, ix, iy, xf, yf)
                     HSV_RANGE_COMPLETE = True
 
-                cv.imshow('frame', frame_to_detect)
+                cv.imshow('frame', temp_frame)
 
                 if cv.waitKey(1) & 0xFF == ord('p') or HSV_RANGE_COMPLETE == True:
                     break
 
         if HSV_RANGE_COMPLETE or cv.waitKey(5) & 0xFF == ord('a'):
             HSV_RANGE_COMPLETE = True
-            mask = color_tracking(frame_to_detect, lower_color, upper_color)
+            mask = color_tracking(frame, lower_color, upper_color)
 
-        cv.imshow('frame', frame_to_detect)
-        cv.imshow('frame Real', frame_real)
+        cv.imshow('frame', frame)
+        cv.imshow('frame2', frame2)
 
         if cv.waitKey(1) & 0xFF == ord("q"):
             break
         
         endTime = time.time()
-        duration = endTime - start_time
+        duration = endTime - startTime
         print("tiempo de ejecucion: {:.4f} FPS: {:.2f}".format(duration, 1/duration))        
 
     cap.release()
