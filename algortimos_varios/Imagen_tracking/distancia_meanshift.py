@@ -1,14 +1,13 @@
 import cv2 as cv
 import numpy as np
 import math
-import  matplotlib.pyplot as plt
 import time
+import  matplotlib.pyplot as plt
 
-# path = '/home/nicolas/Github/videos/video9.MOV'
-path = 0
+path = '/home/nicolas/Videos/VideosPruebasApr17/pruebas4.AVI'
+# path = 0
 
-start_second = 10
-restart_second = 10
+start_second = 80
 
 ix, iy = 0, 0
 xf, yf = 0, 0
@@ -77,7 +76,7 @@ def get_meanshift_hist(frame, x_min, y_min, x_max, y_max):
 
     return roi_hist
 
-def camShiftTacker(frame, roi_h, xi, yi, xf, yf):
+def meanShiftTacker(frame, roi_h, xi, yi, xf, yf):
     hsv_frame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
     x, y = xi, yi
@@ -86,23 +85,31 @@ def camShiftTacker(frame, roi_h, xi, yi, xf, yf):
 
     term_criteria = (cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1)
     mask = cv.calcBackProject([hsv_frame], [0], roi_h, [0, 180], 1)
-    time.sleep(0.05)
-    pts, track_window = cv.CamShift(mask, (x, y, width, height), term_criteria)
+    _, track_window = cv.meanShift(mask, (x, y, width, height), term_criteria)
 
-    return pts, track_window
+    return mask, track_window
 
 
 start_frame = get_frame_number(cap, start_second)
 cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
 
-
+start = 0
+end = 0
 while True:
     
     ret, frame = cap.read()
     if ret == False: break
 
     frame = cv.flip(frame, 1)
-    frame = mejorar_imagen(frame)
+    end = time.time()
+    # se muestra el tiempo en segundos en la parte superior izquierda
+    cv.putText(frame, "Sec: {:.2f}".format(cap.get(cv.CAP_PROP_POS_MSEC) / 1000)
+               ,(10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv.LINE_AA)    
+    # se muestran los fps en la parte superior izquierda, debado del tiempo
+    cv.putText(frame, "FPS: {:.2f}".format(1 / (end - start))
+               ,(10, 60), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv.LINE_AA)
+    start = time.time()
+    frame_enhaced = mejorar_imagen(frame)
 
     if cv.waitKey(1) & 0xFF == ord(' '):
         while True:
@@ -111,12 +118,13 @@ while True:
             if selection == False:
                 cv.namedWindow('frame')
                 cv.setMouseCallback('frame', draw_rectangle)
-                cv.addWeighted(frame, 1, rectangle_mask, 1, 0, temp_frame)
+                cv.addWeighted(frame_enhaced, 1, rectangle_mask, 1, 0, temp_frame)
 
             if selection == True and init_tracking == False:
-                roi_hist_mean = get_meanshift_hist(frame, ix, iy, xf, yf)
+                roi_hist_mean = get_meanshift_hist(frame_enhaced, ix, iy, xf, yf)
                 init_tracking = True
-                start_frame = get_frame_number(cap, restart_second)
+                start_second = 0
+                start_frame = get_frame_number(cap, start_second)
                 cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
 
             cv.imshow('frame', temp_frame)
@@ -125,14 +133,11 @@ while True:
                 break
 
     if init_tracking == True:
-        ret, track_window = camShiftTacker(frame, roi_hist_mean, ix, iy, xf, yf)
-        # x, y, w, h = track_window
-        # cv.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 1)
-        pts = cv.boxPoints(ret)
-        pts = np.int0(pts)
-        cv.polylines(frame, [pts], True, (0, 255, 0), 1)
+        _, track_window = meanShiftTacker(frame_enhaced, roi_hist_mean, ix, iy, xf, yf)
+        x, y, w, h = track_window
+        cv.rectangle(frame_enhaced, (x, y), (x + w, y + h), (0, 0, 255), 1)
     
-    cv.imshow('frame', frame)
+    cv.imshow('frame', frame_enhaced)
     
     # time.sleep(0.02)
 
@@ -237,10 +242,3 @@ cv.destroyAllWindows()
 
 # video.release()
 # cv.destroyAllWindows()
-
-
-
-
-
-
-

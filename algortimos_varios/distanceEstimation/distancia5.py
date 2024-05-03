@@ -65,7 +65,7 @@ upper_color8 = color8+15
 lower_color9 = color9-20
 upper_color9 = color9+5
 
-
+SCALE = 50
 
 HSV_RANGE_COMPLETE = False
 
@@ -74,8 +74,8 @@ AREA_THRESHOLD = 500
 cap = cv.VideoCapture(PATH)
 
 
-rectangle_mask = np.zeros((int(cap.get(4)* 50 / 100), int(cap.get(3)* 50 / 100), 3), dtype=np.uint8)
-mask = np.zeros((int(cap.get(4)* 50 / 100), int(cap.get(3)* 50 / 100), 3), dtype=np.uint8)
+rectangle_mask = np.zeros((int(cap.get(4)* SCALE / 100), int(cap.get(3)* SCALE / 100), 3), dtype=np.uint8)
+mask = np.zeros((int(cap.get(4)* SCALE / 100), int(cap.get(3)* SCALE / 100), 3), dtype=np.uint8)
 
 ancho_imagen = int(cap.get(3))
 alto_imagen = int(cap.get(4))
@@ -91,7 +91,7 @@ CX, CY = int(ancho_imagen/2), int(alto_imagen/2)
 
 NUMERO_DE_PUNTOS = 4
 AREA_MINIMUM_THRESHOLD = 20
-
+ 
 cameraMatrix = np.array(
     [[FX, 0, CX],
      [0, FY, CY],
@@ -265,6 +265,7 @@ def distance(point_1, point_2):
 
     dist_x = point2_x - point1_x
     dist_y = point2_y - point1_y
+
     return math.sqrt(dist_x**2 + dist_y**2)
 
 # Calcula la distancia entre dos puntos dados
@@ -280,16 +281,24 @@ def calculate_distance(cordinates):
         _type_: _description_
     """
     dist1 = distance(cordinates[0][:], cordinates[1][:])
-    dist2 = distance(cordinates[1][:], cordinates[3][:])
-    dist3 = distance(cordinates[3][:], cordinates[2][:])
-    dist4 = distance(cordinates[2][:], cordinates[0][:])
+    dist2 = distance(cordinates[1][:], cordinates[2][:])
+    dist3 = distance(cordinates[2][:], cordinates[3][:])
+    dist4 = distance(cordinates[3][:], cordinates[0][:])
+    # print("dist1: ", dist1)
+    # print("dist2: ", dist2)
+    # print("dist3: ", dist3)
+    # print("dist4: ", dist4)
 
-    d1cm = 85.638 - 0.152*dist1  # polinomio de ajuste d1
-    d2cm = 86.952 - 0.163*dist2  # polinomio de ajuste d2
-    d3cm = 89.312 - 0.166*dist3  # polinomio de ajuste d3
-    d4cm = 88.928 - 0.172*dist4  # polinomio de ajuste d4
 
-    return d1cm, d2cm, d3cm, d4cm
+    # d1cm = 1030.69 - 16.3305*dist1 + 0.114734*dist1**2 - 0.000377651*dist1**3 + 4.70211e-7*dist1**4
+    # d1cm = 85.638 - 0.152*dist1  # polinomio de ajuste d1
+    d1cm = 285.283 - 0.849372*dist1
+    d2cm = 219.445 - 1.08559*dist2  # polinomio de ajuste d2
+    d3cm = 267.427 - 0.761644*dist3  # polinomio de ajuste d3
+    d4cm = 295.1866 - 1.827553*dist4  # polinomio de ajuste d4
+    avg = (d1cm + d2cm + d3cm + d4cm) / 4
+
+    return d1cm, d2cm, d3cm, d4cm, avg
 
 
 def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
@@ -371,7 +380,7 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
                     # print(nose_end_point2D)
                     cv.line(frame_to_track, point1, point2, (0, 0, 0), 2)
 ############################################################################################################
-                d1cm, d2cm, d3cm, d4cm = calculate_distance(new_cordinates)
+                d1cm, d2cm, d3cm, d4cm, avg_distance = calculate_distance(new_cordinates)
 
                 cv.putText(frame_to_track, "Angulo: " + str(int(angle)) + " Grados", (20, 20), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
 
@@ -379,11 +388,11 @@ def color_tracking(frame_to_track, lower_color_to_track, upper_color_to_track):
                            + str(int(d1cm)) + "cm ,"
                            + str(int(d2cm)) + "cm ,"
                            + str(int(d3cm)) + "cm ,"
-                           + str(int(d4cm)) + "cm ",
+                           + str(int(d4cm)) + "cm ,"
+                           + str(int(avg_distance)) + "cm ",
                            (20, 40), cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1)
 
-                cv.putText(frame_to_track, str(position), (centroid_x - 25, centroid_y - 25),
-                        cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 2)
+                cv.putText(frame_to_track, str(position), (centroid_x - 25, centroid_y - 25),cv.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 2)
                 cv.circle(frame_to_track, (centroid_x, centroid_y),
                         12, (0, 255, 0), -1)
 
@@ -408,7 +417,7 @@ def get_frame_number(video, second):
     return frame_number
 
 
-def getHSVparameters(color_avr, bounds=50):
+def getHSVparameters(color_avr, bounds=SCALE):
     global lower_color, upper_color
 
     def add(m,num):
@@ -490,25 +499,85 @@ def resize_frame(frame, scale_percent):
 
 
 
+def order_points(vec_x, vec_y):
+    if len(vec_x) == 4 and len(vec_y) == 4:
+        max_val = -float('inf')
+        min_val = float('inf')
+        max_index = min_index = -1
+
+        for i in range(4):
+            sum_val = vec_x[i] + vec_y[i]
+            if sum_val > max_val:
+                max_val = sum_val
+                max_index = i
+            if sum_val < min_val:
+                min_val = sum_val
+                min_index = i
+
+        remaining_indices = [i for i in range(4) if i not in [max_index, min_index]]
+        remaining_indices.sort(key=lambda i: vec_x[i])
+
+        posiciones = [max_index, min_index] + remaining_indices
+
+        points = [ [vec_x[posiciones[1]], vec_y[posiciones[1]]]
+                ,[vec_x[posiciones[3]], vec_y[posiciones[3]]]
+                ,[vec_x[posiciones[0]], vec_y[posiciones[0]]]
+                ,[vec_x[posiciones[2]], vec_y[posiciones[2]]] ]
+
+        return points
+    else:
+        return -1
+
 def main():
     global lower_color, upper_color, HSV_RANGE_COMPLETE, RECTANGLE_COMPLETE, cap
     
+    start_frame = get_frame_number(cap, START_SECOND)
+    cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
 
+    start = 0
+    end = 0
+    sec = time.time()
+    avg_radius = 0
     while True:
-        start_time = time.time()
         ret, frame = cap.read()
 
         if ret == False: 
             break
-        frame_real = resize_frame(frame, 50)
-        frame_to_process = frame_real
-
+        frame_real = resize_frame(frame, SCALE)
+        frame_to_process = resize_frame(frame, SCALE)
+        #crear un recuadro en la parte superior de la imagen
+        cv.rectangle(frame_to_process, (0,0), (frame_to_process.shape[1], 50), (0, 255, 0), -1)
+        # cv.imshow('frame_to_process', frame_to_process)
+        end = time.time()
+        # se muestra el tiempo en segundos en la parte superior izquierda
+        cv.putText(frame_real, "Sec: {:.2f}".format(time.time()-sec)
+                ,(10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv.LINE_AA)    
+        # se muestran los fps en la parte superior izquierda, debado del tiempo
+        cv.putText(frame_real, "FPS: {:.2f}".format(1 / (end - start))
+                ,(10, 60), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv.LINE_AA)
+        start = time.time()
+        
         floor_mask = cv.inRange(frame_to_process, lower_color9, upper_color9)
         _, floor_mask_binary = cv.threshold(floor_mask, 245, 245, cv.THRESH_BINARY)
+        cv.imshow('floor_mask_binary', floor_mask_binary)
 
         _, _, red_Channel  = cv.split(frame_to_process)
         _, red_Channel_binary = cv.threshold(red_Channel, 245, 245, cv.THRESH_BINARY)
         frame_to_detect_binary = cv.subtract(red_Channel_binary, floor_mask_binary)
+        cv.imshow('frame_to_process', frame_to_detect_binary)
+        if int(avg_radius) <= 10:
+            # frame_real = enhance_image(frame_real)
+            # print("se activo", avg_radius)
+            kernel = np.ones((5,5),np.uint8)
+            mask_long_distance = cv.inRange(frame_to_process, lower_color2, upper_color2)
+            # Dilatar la imagen
+            mask_long_distance = cv.medianBlur(mask_long_distance, 5)
+            dilation = cv.dilate(mask_long_distance, kernel, iterations = 1)
+            cv.imshow('mask2', dilation)
+            frame_to_detect_binary = cv.add(frame_to_detect_binary, mask_long_distance)
+        # else:
+        #     print("se desactivo")
+
         
         frame_to_detect = cv.merge([frame_to_detect_binary, frame_to_detect_binary, frame_to_detect_binary])
         frame_to_detect = cv.medianBlur(frame_to_detect, 5)
@@ -522,63 +591,276 @@ def main():
         for contour in contours:
             area = cv.contourArea(contour)
             if area > AREA_MINIMUM_THRESHOLD:
-                print("area", area)
-                (_, y_pos), _ = cv.minEnclosingCircle(contour)
+                (x_pos, y_pos), _ = cv.minEnclosingCircle(contour)
                 areas.append(area)
                 lower_y.append(y_pos)
-
+        
         max_area = sorted(areas, reverse=True)[:6]
         min_pos_area = sorted(lower_y, reverse=True)[:4]
 
+        vec_x = []
+        vec_y = []
+        avg_radius = 0
+        mask_circulos = np.zeros((frame_to_detect.shape[0], frame_to_detect.shape[1]), np.uint8)
         for contour in contours:
             area = cv.contourArea(contour)
             (x,y),radius = cv.minEnclosingCircle(contour)
-
             if area in max_area and y in min_pos_area:
-                
+                vec_x.append(int(x))
+                vec_y.append(int(y))
                 center, radius = (int(x),int(y)), int(radius)
-                frame_to_detect = cv.circle(frame_to_detect,center,radius,(0,255,0),-1)
+                avg_radius += radius
+
+                mask_circulos = cv.circle(mask_circulos,center,radius,(255,255,255),-1)
+                frame_to_detect = cv.circle(mask_circulos,center,radius,(255,255,255),-1)
                 frame_real = cv.circle(frame_real,center,radius,(0,255,0),2)
-    
+        
+        points2 = order_points(vec_x, vec_y)
+        avg_radius = avg_radius/4
 
-        if cv.waitKey(5) & 0xFF == ord('p'):
-            print("Selección de region de interés")
-            while True:
-                temp_frame = np.zeros((int(cap.get(4)* 50 / 100), int(cap.get(3)* 50 / 100), 3), dtype=np.uint8)
-                if RECTANGLE_COMPLETE == False:
-                    cv.namedWindow('frame')
-                    cv.setMouseCallback('frame', draw_rectangle)
-                
-                    if frame.shape == rectangle_mask.shape:
-                        cv.addWeighted(frame_to_detect, 1, rectangle_mask, 1, 0, temp_frame)
-                    else:
-                        print("frame y rectangle_mask no tienen el mismo tamaño")
+        if len(vec_x) >= 4 and points2 != -1:
+            
+            for i in range(4):
+                cv.putText(frame_real, str(i), (int(points2[i][0]), int(points2[i][1])),cv.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
+                cv.line(frame_real, (int(points2[i][0]), int(points2[i][1])), (int(points2[(i+1)%4][0]), int(points2[(i+1)%4][1])), (0, 0, 255), 2)
+                d1, d2, d3, d4, avg_distance = calculate_distance(points2)
+                cv.putText(frame_real, "Promedio del radio: " + str(int(avg_radius)), (10, 90), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv.LINE_AA)
+                cv.putText(frame_real, "Distancias: "
+                           + str(int(avg_distance)) + "cm ",
+                           (10, 110), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv.LINE_AA)
 
-                if RECTANGLE_COMPLETE == True and HSV_RANGE_COMPLETE == False:
-                    get_hsv_range(frame_to_detect, ix, iy, xf, yf)
-                    HSV_RANGE_COMPLETE = True
 
-                cv.imshow('frame', frame_to_detect)
 
-                if cv.waitKey(1) & 0xFF == ord('p') or HSV_RANGE_COMPLETE == True:
-                    break
+            if cv.waitKey(5) & 0xFF == ord('p'):
+                print("Selección de region de interés")
+                while True:
+                    
+                    cv.imshow('frame', frame_to_detect)
+                    if cv.waitKey(1) & 0xFF == ord('p') or HSV_RANGE_COMPLETE == True:
+                        break
 
-        if HSV_RANGE_COMPLETE or cv.waitKey(5) & 0xFF == ord('a'):
-            HSV_RANGE_COMPLETE = True
-            mask = color_tracking(frame_to_detect, lower_color, upper_color)
 
         cv.imshow('frame', frame_to_detect)
         cv.imshow('frame Real', frame_real)
 
         if cv.waitKey(1) & 0xFF == ord("q"):
             break
-        
-        endTime = time.time()
-        duration = endTime - start_time
-        print("tiempo de ejecucion: {:.4f} FPS: {:.2f}".format(duration, 1/duration))        
+    
 
     cap.release()
     cv.destroyAllWindows()
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
+
+
+
+
+        # floor_mask = cv.inRange(frame_to_process, lower_color9, upper_color9)
+        # _, floor_mask_binary = cv.threshold(floor_mask, 245, 245, cv.THRESH_BINARY)
+
+        # _, _, red_Channel  = cv.split(frame_to_process)
+        # _, red_Channel_binary = cv.threshold(red_Channel, 245, 245, cv.THRESH_BINARY)
+        # frame_to_detect_binary = cv.subtract(red_Channel_binary, floor_mask_binary)
+        
+        # frame_to_detect = cv.merge([frame_to_detect_binary, frame_to_detect_binary, frame_to_detect_binary])
+        # frame_to_detect = cv.medianBlur(frame_to_detect, 5)
+        
+        # frame_to_detect_gray = cv.cvtColor(frame_to_detect, cv.COLOR_BGR2GRAY)
+        # contours, _ = cv.findContours(frame_to_detect_gray, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+        # areas = []
+        # lower_y = []
+        # vec_x = []
+        # vec_y = []
+
+        # for contour in contours:
+        #     area = cv.contourArea(contour)
+        #     (x,y),radius = cv.minEnclosingCircle(contour)
+        #     if area > AREA_MINIMUM_THRESHOLD:
+        #         areas.append(area)
+        #         lower_y.append(y)
+        #         if area in sorted(areas, reverse=True)[:4] and y in sorted(lower_y, reverse=True)[:4]:
+        #             vec_x.append(int(x))
+        #             vec_y.append(int(y))
+        #             center, radius = (int(x),int(y)), int(radius)
+        #             frame_to_detect = cv.circle(frame_to_detect,center,radius,(255,255,255),-1)
+        #             frame_real = cv.circle(frame_real,center,radius,(0,255,0),2)
+        
+        # points2 = order_points(vec_x, vec_y)
+        # if len(vec_x) >= 4 and points2 != -1:
+        #     for i in range(4):
+        #         cv.putText(frame_real, str(i), (int(points2[i][0]), int(points2[i][1])),cv.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
+        #         # dibuja lineas entre todos los puntos
+        #         cv.line(frame_real, (int(points2[i][0]), int(points2[i][1])), (int(points2[(i+1)%4][0]), int(points2[(i+1)%4][1])), (0, 0, 255), 2)
+        #         # muestra un texto con las distancias entre cada una de las lineas
+        #         cv.putText(frame_real, str(int(distance(points2[i], points2[(i+1)%4]))), (int((points2[i][0]+points2[(i+1)%4][0])/2), int((points2[i][1]+points2[(i+1)%4][1])/2)),cv.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
+
+        # Rest of the code...
+        # if cv.waitKey(5) & 0xFF == ord('p'):
+        #     print("Selección de region de interés")
+        #     while True:
+        #         temp_frame = np.zeros((int(cap.get(4)* SCALE / 100), int(cap.get(3)* SCALE / 100), 3), dtype=np.uint8)
+        #         if RECTANGLE_COMPLETE == False:
+        #             cv.namedWindow('frame')
+        #             cv.setMouseCallback('frame', draw_rectangle)
+                
+        #             if frame_to_detect.shape == rectangle_mask.shape:
+        #                 cv.addWeighted(frame_to_detect, 1, rectangle_mask, 1, 0, temp_frame)
+        #             else:
+        #                 print("frame y rectangle_mask no tienen el mismo tamaño")
+
+        #         if RECTANGLE_COMPLETE == True and HSV_RANGE_COMPLETE == False:
+        #             get_hsv_range(frame_to_detect, ix, iy, xf, yf)
+        #             HSV_RANGE_COMPLETE = True
+
+        #         cv.imshow('frame', frame_to_detect)
+
+        #         if cv.waitKey(1) & 0xFF == ord('p') or HSV_RANGE_COMPLETE == True:
+        #             break
+
+        # if HSV_RANGE_COMPLETE or cv.waitKey(5) & 0xFF == ord('a'):
+        #     HSV_RANGE_COMPLETE = True
+        #     mask = color_tracking(frame_to_detect, lower_color, upper_color)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# def main():
+#     global lower_color, upper_color, HSV_RANGE_COMPLETE, RECTANGLE_COMPLETE, cap
+    
+#     start_frame = get_frame_number(cap, START_SECOND)
+#     cap.set(cv.CAP_PROP_POS_FRAMES, start_frame)
+
+
+#     start = 0
+#     end = 0
+#     sec = time.time()
+#     points = []
+#     while True:
+#         start_time = time.time()
+#         ret, frame = cap.read()
+
+#         if ret == False: 
+#             break
+        
+#         frame_real = resize_frame(frame, SCALE)
+#         frame_to_process = frame_real
+#         end = time.time()
+#         # se muestra el tiempo en segundos en la parte superior izquierda
+#         cv.putText(frame_real, "Sec: {:.2f}".format(time.time()-sec)
+#                 ,(10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv.LINE_AA)    
+#         # se muestran los fps en la parte superior izquierda, debado del tiempo
+#         cv.putText(frame_real, "FPS: {:.2f}".format(1 / (end - start))
+#                 ,(10, 60), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv.LINE_AA)
+#         start = time.time()
+        
+#         floor_mask = cv.inRange(frame_to_process, lower_color9, upper_color9)
+#         _, floor_mask_binary = cv.threshold(floor_mask, 245, 245, cv.THRESH_BINARY)
+
+#         _, _, red_Channel  = cv.split(frame_to_process)
+#         _, red_Channel_binary = cv.threshold(red_Channel, 245, 245, cv.THRESH_BINARY)
+#         frame_to_detect_binary = cv.subtract(red_Channel_binary, floor_mask_binary)
+        
+#         frame_to_detect = cv.merge([frame_to_detect_binary, frame_to_detect_binary, frame_to_detect_binary])
+#         frame_to_detect = cv.medianBlur(frame_to_detect, 5)
+        
+#         frame_to_detect_gray = cv.cvtColor(frame_to_detect, cv.COLOR_BGR2GRAY)
+#         contours, _ = cv.findContours(frame_to_detect_gray, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+#         areas = []
+#         lower_y = []
+
+#         for contour in contours:
+#             area = cv.contourArea(contour)
+#             if area > AREA_MINIMUM_THRESHOLD:
+#                 (x_pos, y_pos), _ = cv.minEnclosingCircle(contour)
+#                 areas.append(area)
+#                 lower_y.append(y_pos)
+        
+
+#         max_area = sorted(areas, reverse=True)[:6]
+#         min_pos_area = sorted(lower_y, reverse=True)[:4]
+
+
+#         vec_x = []
+#         vec_y = []
+#         for contour in contours:
+#             area = cv.contourArea(contour)
+#             (x,y),radius = cv.minEnclosingCircle(contour)
+#             if area in max_area and y in min_pos_area:
+#                 vec_x.append(int(x))
+#                 vec_y.append(int(y))
+#                 center, radius = (int(x),int(y)), int(radius)
+#                 frame_to_detect = cv.circle(frame_to_detect,center,radius,(0,255,0),-1)
+#                 frame_real = cv.circle(frame_real,center,radius,(0,255,0),2)
+        
+#         points2 = order_points(vec_x, vec_y)
+#         if len(vec_x) >= 4 and points2 != -1:
+#             cv.putText(frame_real, str(0), (int(points2[0][0]), int(points2[0][1])),cv.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
+#             cv.putText(frame_real, str(1), (int(points2[1][0]), int(points2[1][1])),cv.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
+#             cv.putText(frame_real, str(2), (int(points2[2][0]), int(points2[2][1])),cv.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
+#             cv.putText(frame_real, str(3), (int(points2[3][0]), int(points2[3][1])),cv.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
+    
+
+#         if cv.waitKey(5) & 0xFF == ord('p'):
+#             print("Selección de region de interés")
+#             while True:
+#                 temp_frame = np.zeros((int(cap.get(4)* SCALE / 100), int(cap.get(3)* SCALE / 100), 3), dtype=np.uint8)
+#                 if RECTANGLE_COMPLETE == False:
+#                     cv.namedWindow('frame')
+#                     cv.setMouseCallback('frame', draw_rectangle)
+                
+#                     if frame_to_detect.shape == rectangle_mask.shape:
+#                         cv.addWeighted(frame_to_detect, 1, rectangle_mask, 1, 0, temp_frame)
+#                     else:
+#                         print("frame y rectangle_mask no tienen el mismo tamaño")
+
+#                 if RECTANGLE_COMPLETE == True and HSV_RANGE_COMPLETE == False:
+#                     get_hsv_range(frame_to_detect, ix, iy, xf, yf)
+#                     HSV_RANGE_COMPLETE = True
+
+#                 cv.imshow('frame', frame_to_detect)
+
+#                 if cv.waitKey(1) & 0xFF == ord('p') or HSV_RANGE_COMPLETE == True:
+#                     break
+
+#         if HSV_RANGE_COMPLETE or cv.waitKey(5) & 0xFF == ord('a'):
+#             HSV_RANGE_COMPLETE = True
+#             mask = color_tracking(frame_to_detect, lower_color, upper_color)
+
+#         cv.imshow('frame', frame_to_detect)
+#         cv.imshow('frame Real', frame_real)
+
+#         if cv.waitKey(1) & 0xFF == ord("q"):
+#             break
+        
+#         endTime = time.time()
+#         duration = endTime - start_time
+#         # print("tiempo de ejecucion: {:.4f} FPS: {:.2f}".format(duration, 1/duration))        
+
+#     cap.release()
+#     cv.destroyAllWindows()
+
+# if __name__ == "__main__":
+#     main()
