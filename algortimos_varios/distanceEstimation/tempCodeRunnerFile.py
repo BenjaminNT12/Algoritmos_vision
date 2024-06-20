@@ -1,11 +1,14 @@
- int(avg_radius) < 10:
-            print("se activo", avg_radius)
-            kernel = np.ones((5,5),np.uint8)
-            mask_long_distance = cv.inRange(frame_to_process, lower_color2, upper_color2)
-            # Dilatar la imagen
-            dilation = cv.dilate(mask_long_distance, kernel, iterations = 1)
-            mask_long_distance = cv.medianBlur(dilation, 5)
-            cv.imshow('mask2', mask_long_distance)
-            frame_to_detect_binary = cv.add(frame_to_detect_binary, mask_long_distance)
-        else:
-            print("se desactivo")
+
+                   "Sec: {:.2f}".format(time.time()-sec),
+                   (10, 30), 
+                   cv.FONT_HERSHEY_SIMPLEX, 0.5, 
+                   (0, 255, 0), 1, 
+                   cv.LINE_AA)   
+        
+        
+        cv.putText(frame_to_process, 
+                   "FPS: {:.2f}".format(1 / (end - start)),
+                   (10, 60), 
+                   cv.FONT_HERSHEY_SIMPLEX, 0.5, 
+                   (0, 255, 0), 1, 
+                   cv.LINE_AA)

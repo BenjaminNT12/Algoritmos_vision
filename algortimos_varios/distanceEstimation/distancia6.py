@@ -3,7 +3,7 @@ import numpy as np
 import cv2 as cv
 import time
 
-PATH = '/home/nicolas/Videos/VideosPruebasMay21/pruebas4.AVI'
+PATH = '/home/nicolas/Videos/VideosPruebasMay21/pruebasMay21.AVI'
 # lower_color [135   2 254] upper_color [158   4 255]-
 # PATH = 0
 
